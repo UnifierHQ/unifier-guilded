@@ -38,6 +38,12 @@ def log(type='???',status='ok',content='None'):
 async def on_ready():
     log('RVT','ok','Guilded client booted!')
 
+@gd_bot.event
+async def on_message(message):
+    print(f'{message.author.name}: {message.content}')
+    if message.content=='ub!hi':
+        await message.channel.send(f'Hi, {message.author.name}! Guilded works!')
+
 class Guilded(commands.Cog,name='<:revoltsupport:1211013978558304266> Guilded Support'):
     """An extension that enables Unifier to run on Guilded. Manages Guilded instance, as well as Guilded-to-Guilded and Guilded-to-external bridging.
 
