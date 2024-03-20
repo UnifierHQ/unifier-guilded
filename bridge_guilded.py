@@ -276,7 +276,7 @@ async def on_message(message):
     roomname = None
     for key in gd_bot.dc_bot.db['rooms_revolt']:
         try:
-            if message.channel.id in str(gd_bot.dc_bot.db['rooms_revolt'][key][message.server.id]):
+            if message.server.id in str(gd_bot.dc_bot.db['rooms_revolt'][key][message.server.id]):
                 roomname = key
                 break
         except:
