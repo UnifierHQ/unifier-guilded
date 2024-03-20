@@ -119,7 +119,7 @@ async def bind(ctx,*,room=''):
         msg = await ctx.send('Please send "I agree" to bind to the room.',embed=embed)
 
         def check(message):
-            return message.user.id==ctx.author.id
+            return message.author.id==ctx.author.id
 
         try:
             resp = await gd_bot.wait_for("message",timeout=60,check=check)
@@ -273,7 +273,6 @@ async def unrestrict(ctx, *, target):
 
 @gd_bot.event
 async def on_message(message):
-    print(message.content)
     roomname = None
     for key in gd_bot.dc_bot.db['rooms_revolt']:
         try:
