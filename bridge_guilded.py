@@ -52,14 +52,13 @@ class Guilded(commands.Cog,name='<:revoltsupport:1211013978558304266> Guilded Su
             self.guilded_client_task = asyncio.create_task(self.guilded_boot())
 
     async def guilded_boot(self):
-        if self.bot.revolt_client is None:
+        if not self.bot.guilded_client.ws:
             log('DAT','info','Syncing Guilded rooms...')
             for key in self.bot.db['rooms']:
                 if not key in list(self.bot.db['rooms_guilded'].keys()):
                     self.bot.db['rooms_guilded'].update({key: {}})
                     log('DAT','ok','Synced room '+key)
             self.bot.db.save_data()
-            gd_bot.add_bot(self.bot)
             while True:
                 try:
                     self.bot.guilded_client = gd_bot
