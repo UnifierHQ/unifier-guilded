@@ -49,7 +49,7 @@ class Guilded(commands.Cog,name='<:revoltsupport:1211013978558304266> Guilded Su
         if not hasattr(self.bot, 'guilded_client'):
             self.bot.guilded_client = gd_bot
             self.bot.guilded_client.dc_bot = self.bot
-            self.guilded_client_task = asyncio.create_task(self.guilded_boot())
+            self.bot.guilded_client_task = asyncio.create_task(self.guilded_boot())
 
     async def guilded_boot(self):
         if not self.bot.guilded_client.ws:
