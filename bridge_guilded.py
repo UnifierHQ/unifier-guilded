@@ -62,6 +62,7 @@ async def send(ctx,*,content):
 
 @gd_bot.event
 async def on_message(message):
+    print(message.content)
     roomname = None
     for key in gd_bot.dc_bot.db['rooms_revolt']:
         try:
