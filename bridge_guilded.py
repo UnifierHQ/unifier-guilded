@@ -8,16 +8,6 @@ import aiohttp
 from time import strftime, gmtime
 import json
 
-
-class GuildedBot(gd_commands.bot):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.bot = None
-
-    def add_bot(self,bot):
-        """Adds a Discord bot to the Guilded client."""
-        self.bot = bot
-
 with open('config.json', 'r') as file:
     data = json.load(file)
 
@@ -28,7 +18,7 @@ admin_ids = data['admin_ids']
 pr_room_index = data["pr_room_index"] # If this is 0, then the oldest room will be used as the PR room.
 pr_ref_room_index = data["pr_ref_room_index"]
 
-gd_bot = GuildedBot(command_prefix=data['prefix'])
+gd_bot = gd_commands.Bot(command_prefix=data['prefix'])
 
 def log(type='???',status='ok',content='None'):
     time1 = strftime("%Y.%m.%d %H:%M:%S", gmtime())
@@ -57,7 +47,8 @@ class Guilded(commands.Cog,name='<:revoltsupport:1211013978558304266> Guilded Su
         if not 'revolt' in external_services:
             raise RuntimeError('guilded is not listed as an external service in config.json. More info: https://unichat-wiki.pixels.onl/setup-selfhosted/getting-started#installing-revolt-support')
         if not hasattr(self.bot, 'guilded_client'):
-            self.bot.guilded_client = None
+            self.bot.guilded_client = gd_bot
+            self.bot.guilded_client.dc_bot = self.bot
             self.guilded_client_task = asyncio.create_task(self.guilded_boot())
 
     async def guilded_boot(self):
