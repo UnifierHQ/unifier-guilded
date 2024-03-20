@@ -7,6 +7,7 @@ from guilded.ext import commands as gd_commands
 import asyncio
 import traceback
 import aiohttp
+import sys
 from time import strftime, gmtime
 import json
 
@@ -352,9 +353,12 @@ class Guilded(commands.Cog,name='<:revoltsupport:1211013978558304266> Guilded Su
                 try:
                     self.bot.guilded_client.add_bot(self.bot)
                     await self.bot.guilded_client.start(data['guilded_token'])
-                except:
+                except Exception as e:
                     log('RVT', 'error', 'Guilded client failed to boot!')
                     traceback.print_exc()
+                    if type(e) is asyncio.exceptions.CancelledError:
+                        log('BOT','info','Shutting down Unifier due to likely KeyboardInterrupt')
+                        sys.exit(0)
                     break
                 log('RVT', 'warn', 'Guilded client has exited. Rebooting in 10 seconds...')
                 try:
