@@ -83,3 +83,6 @@ class Guilded(commands.Cog,name='<:revoltsupport:1211013978558304266> Guilded Su
                 except:
                     log('RVT', 'error', 'Couldn\'t sleep, exiting loop...')
                     break
+
+def setup(bot):
+    bot.add_cog(Guilded(bot))
