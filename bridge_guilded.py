@@ -104,7 +104,7 @@ class Guilded(commands.Cog,name='<:revoltsupport:1211013978558304266> Guilded Su
     Developed by Green"""
     def __init__(self,bot):
         self.bot = bot
-        if not 'revolt' in external_services:
+        if not 'guilded' in external_services:
             raise RuntimeError('guilded is not listed as an external service in config.json. More info: https://unichat-wiki.pixels.onl/setup-selfhosted/getting-started#installing-revolt-support')
         if not hasattr(self.bot, 'guilded_client'):
             self.bot.guilded_client = gd_bot
