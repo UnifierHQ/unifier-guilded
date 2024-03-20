@@ -273,16 +273,9 @@ async def unrestrict(ctx, *, target):
 
 @gd_bot.event
 async def on_message(message):
-    roomname = None
-    for key in gd_bot.dc_bot.db['rooms_revolt']:
-        try:
-            if message.server.id in str(gd_bot.dc_bot.db['rooms_revolt'][key][message.server.id]):
-                roomname = key
-                break
-        except:
-            pass
     if message.author.id == gd_bot.user.id:
         return
+
     t = time.time()
     if message.author.id in f'{gd_bot.dc_bot.db["banned"]}':
         if t >= gd_bot.dc_bot.db["banned"][message.author.id]:
@@ -298,8 +291,36 @@ async def on_message(message):
             return
     if message.content.startswith(gd_bot.command_prefix):
         return await gd_bot.process_commands(message)
-    if not roomname:
+
+    try:
+        hooks = await message.channel.webhooks()
+    except:
+        hooks = await message.guild.webhooks()
+
+    found = False
+    origin_room = 0
+
+    for webhook in hooks:
+        index = 0
+        for key in gd_bot.dc_bot.db['rooms']:
+            data = gd_bot.dc_bot.db['rooms'][key]
+            if f'{message.guild.id}' in list(data.keys()):
+                hook_ids = data[f'{message.guild.id}']
+            else:
+                hook_ids = []
+            if webhook.id in hook_ids:
+                origin_room = index
+                found = True
+                break
+            index += 1
+        if found:
+            break
+
+    if not found:
         return
+
+    roomname = list(gd_bot.dc_bot.db['rooms'].keys())[origin_room]
+
     await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='guilded')
     await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='discord')
     for platform in external_services:
