@@ -45,6 +45,28 @@ def log(type='???',status='ok',content='None'):
         raise ValueError('Invalid status type provided')
     print(f'[{type} | {time1} | {status}] {content}')
 
+def is_user_admin(id):
+    try:
+        global admin_ids
+        return id in admin_ids
+    except:
+        print("There was an error in 'is_user_admin(id)', for security reasons permission was resulted into denying!")
+        return False
+
+def is_room_restricted(room,db):
+    try:
+        return room in db['restricted']
+    except:
+        traceback.print_exc()
+        return False
+
+def is_room_locked(room,db):
+    try:
+        return room in db['locked']
+    except:
+        traceback.print_exc()
+        return False
+
 @gd_bot.event
 async def on_ready():
     log('RVT','ok','Guilded client booted!')
@@ -59,6 +81,195 @@ async def send(ctx,*,content):
     ch = guild.get_channel(1208761825898790965)
     await ch.send(content)
     await ctx.send('check discord')
+
+@gd_bot.command(aliases=['link','connect','federate','bridge'])
+async def bind(ctx,*,room=''):
+    if not ctx.author.guild_permissions.manage_channels and not is_user_admin(ctx.author.id):
+        return await ctx.send('You don\'t have the necessary permissions.')
+    if is_room_restricted(room,gd_bot.dc_bot.db) and not is_user_admin(ctx.author.id):
+        return await ctx.send('Only admins can bind channels to restricted rooms.')
+    if room=='' or not room:
+        room = 'main'
+        await ctx.send('**No room was given, defaulting to main**')
+    try:
+        data = gd_bot.dc_bot.db['rooms_guilded'][room]
+    except:
+        return await ctx.send('This isn\'t a valid room. Try `main`, `pr`, `prcomments`, or `liveries` instead.')
+    try:
+        try:
+            guild = data[f'{ctx.guild.id}']
+        except:
+            guild = []
+        if len(guild) >= 1:
+            return await ctx.send('Your server is already linked to this room.\n**Accidentally deleted the webhook?** `u!unlink` it then `u!link` it back.')
+        index = 0
+        text = ''
+        if len(gd_bot.dc_bot.db['rules'][room])==0:
+            text = f'No rules exist yet for this room! For now, follow the main room\'s rules.\nYou can always view rules if any get added using `u!rules {room}`.'
+        else:
+            for rule in gd_bot.dc_bot.db['rules'][room]:
+                if text=='':
+                    text = f'1. {rule}'
+                else:
+                    text = f'{text}\n{index}. {rule}'
+                index += 1
+        text = f'{text}\n\nPlease display these rules somewhere accessible.'
+        embed = guilded.Embed(title='Please agree to the room rules first:',description=text)
+        embed.set_footer(text='Failure to follow room rules may result in user or server restrictions.')
+        msg = await ctx.send('Please send "I agree" to bind to the room.',embed=embed)
+
+        def check(message):
+            return message.user.id==ctx.author.id
+
+        try:
+            resp = await gd_bot.wait_for("message",timeout=60,check=check)
+        except:
+            return await ctx.send('Timed out.')
+
+        if resp.content=='reject':
+            return
+        webhook = await ctx.channel.create_webhook(name='Unifier Bridge')
+        newdata = gd_bot.dc_bot.db['rooms_guilded'][room]
+        guild = [webhook.id]
+        newdata.update({f'{ctx.guild.id}':guild})
+        gd_bot.dc_bot.db['rooms_guilded'][room] = newdata
+        gd_bot.dc_bot.db.save_data()
+        await ctx.send('Linked channel with network!')
+
+        try:
+            await msg.pin()
+        except:
+            pass
+    except:
+        await ctx.send('Something went wrong - check my permissions.')
+        raise
+
+@gd_bot.command(aliases=['unlink','disconnect'])
+async def unbind(ctx,*,room=''):
+    if room=='':
+        return await ctx.send('You must specify the room to unbind from.')
+    if not ctx.author.guild_permissions.manage_channels and not is_user_admin(ctx.author.id):
+        return await ctx.send('You don\'t have the necessary permissions.')
+    try:
+        data = gd_bot.dc_bot.db['rooms_guilded'][room]
+    except:
+        return await ctx.send('This isn\'t a valid room. Try `main`, `pr`, `prcomments`, or `liveries` instead.')
+    try:
+        try:
+            hooks = await ctx.guild.webhooks()
+        except:
+            return await ctx.send('I cannot manage webhooks.')
+        if f'{ctx.guild.id}' in list(data.keys()):
+            hook_ids = data[f'{ctx.guild.id}']
+        else:
+            hook_ids = []
+        for webhook in hooks:
+            if webhook.id in hook_ids:
+                await webhook.delete()
+                break
+        data.pop(f'{ctx.guild.id}')
+        gd_bot.dc_bot.db['rooms_guilded'][room] = data
+        gd_bot.dc_bot.db.save_data()
+        await ctx.send('Unlinked channel from network!')
+    except:
+        await ctx.send('Something went wrong - check my permissions.')
+        raise
+
+@gd_bot.command()
+async def delete(ctx, *, msg_id=None):
+    """Deletes all bridged messages. Does not delete the original."""
+    gbans = gd_bot.dc_bot.db['banned']
+    ct = time.time()
+    if f'{ctx.author.id}' in list(gbans.keys()):
+        banuntil = gbans[f'{ctx.author.id}']
+        if ct >= banuntil and not banuntil == 0:
+            gd_bot.dc_bot.db['banned'].pop(f'{ctx.author.id}')
+            gd_bot.dc_bot.db.update()
+        else:
+            return
+    if f'{ctx.guild.id}' in list(gbans.keys()):
+        banuntil = gbans[f'{ctx.guild.id}']
+        if ct >= banuntil and not banuntil == 0:
+            gd_bot.dc_bot.db['banned'].pop(f'{ctx.guild.id}')
+            gd_bot.dc_bot.db.update()
+        else:
+            return
+    if f'{ctx.author.id}' in list(gbans.keys()) or f'{ctx.guild.id}' in list(gbans.keys()):
+        return await ctx.send('Your account or your guild is currently **global restricted**.')
+
+    try:
+        msg_id = ctx.message.replied_to[0].id
+    except:
+        if not msg_id:
+            return await ctx.send('No message!')
+
+    try:
+        msg = await gd_bot.dc_bot.bridge.fetch_message(msg_id)
+    except:
+        return await ctx.send('Could not find message in cache!')
+
+    if not ctx.author.id==msg.author_id and not ctx.author.id in gd_bot.dc_bot.moderators:
+        return await ctx.send('You didn\'t send this message!')
+
+    try:
+        await gd_bot.dc_bot.bridge.delete_parent(msg_id)
+        if msg.webhook:
+            raise ValueError()
+        return await ctx.send('Deleted message (parent deleted, copies will follow)')
+    except:
+        try:
+            deleted = await gd_bot.dc_bot.bridge.delete_copies(msg_id)
+            return await ctx.send(f'Deleted message ({deleted} copies deleted)')
+        except:
+            traceback.print_exc()
+            await ctx.send('Something went wrong.')
+
+@gd_bot.command(aliases=['ban'])
+async def restrict(ctx, *, target):
+    if not ctx.author.get_permissions().kick_members and not ctx.author.get_permissions().ban_members:
+        return await ctx.send('You cannot restrict members/servers.')
+    try:
+        userid = int(target.replace('<@', '', 1).replace('!', '', 1).replace('>', '', 1))
+        if userid == ctx.author.id:
+            return await ctx.send('You can\'t restrict yourself :thinking:')
+        if userid == ctx.guild.id:
+            return await ctx.send('You can\'t restrict your own server :thinking:')
+    except:
+        userid = target
+        if not len(userid) == 26:
+            return await ctx.send('Invalid user/server!')
+    if userid in gd_bot.dc_bot.moderators:
+        return await ctx.send(
+            'UniChat moderators are immune to blocks!\n(Though, do feel free to report anyone who abuses this immunity.)')
+    banlist = []
+    if f'{ctx.guild.id}' in list(gd_bot.dc_bot.db['blocked'].keys()):
+        banlist = gd_bot.dc_bot.db['blocked'][f'{ctx.guild.id}']
+    else:
+        gd_bot.dc_bot.db['blocked'].update({f'{ctx.guild.id}': []})
+    if userid in banlist:
+        return await ctx.send('User/server already banned!')
+    gd_bot.dc_bot.db['blocked'][f'{ctx.guild.id}'].append(userid)
+    gd_bot.dc_bot.db.save_data()
+    await ctx.send('User/server can no longer forward messages to this channel!')
+
+@gd_bot.command(aliases=['unban'])
+async def unrestrict(ctx, *, target):
+    if not ctx.author.get_permissions().kick_members and not ctx.author.get_permissions().ban_members:
+        return await ctx.send('You cannot unrestrict members/servers.')
+    try:
+        userid = int(target.replace('<@', '', 1).replace('!', '', 1).replace('>', '', 1))
+    except:
+        userid = target
+        if not len(target) == 26:
+            return await ctx.send('Invalid user/server!')
+    banlist = []
+    if f'{ctx.guild.id}' in list(gd_bot.dc_bot.db['blocked'].keys()):
+        banlist = gd_bot.dc_bot.db['blocked'][f'{ctx.guild.id}']
+    if not userid in banlist:
+        return await ctx.send('User/server not banned!')
+    gd_bot.dc_bot.db['blocked'][f'{ctx.guild.id}'].remove(userid)
+    gd_bot.dc_bot.db.save_data()
+    await ctx.send('User/server can now forward messages to this channel!')
 
 @gd_bot.event
 async def on_message(message):
@@ -90,14 +301,12 @@ async def on_message(message):
         return await gd_bot.process_commands(message)
     if not roomname:
         return
-    thing = False
-    if thing:
-        await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='guilded')
-        await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='discord')
-        for platform in external_services:
-            if platform=='guilded':
-                continue
-            await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform=platform)
+    await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='guilded')
+    await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='discord')
+    for platform in external_services:
+        if platform=='guilded':
+            continue
+        await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform=platform)
 
 class Guilded(commands.Cog,name='<:revoltsupport:1211013978558304266> Guilded Support'):
     """An extension that enables Unifier to run on Guilded. Manages Guilded instance, as well as Guilded-to-Guilded and Guilded-to-external bridging.
