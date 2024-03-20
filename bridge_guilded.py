@@ -358,8 +358,6 @@ class Guilded(commands.Cog,name='<:revoltsupport:1211013978558304266> Guilded Su
                 except Exception as e:
                     log('RVT', 'error', 'Guilded client failed to boot!')
                     traceback.print_exc()
-                    if type(e) is asyncio.exceptions.CancelledError:
-                        os.kill(self.bot.pid, signal.SIGKILL)
                     break
                 log('RVT', 'warn', 'Guilded client has exited. Rebooting in 10 seconds...')
                 try:
