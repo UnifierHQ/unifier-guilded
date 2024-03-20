@@ -62,7 +62,7 @@ class Guilded(commands.Cog,name='<:revoltsupport:1211013978558304266> Guilded Su
             while True:
                 try:
                     self.bot.guilded_client = gd_bot
-                    gd_bot.run(data['guilded_token'])
+                    await gd_bot.start(data['guilded_token'])
                 except:
                     log('RVT', 'error', 'Guilded client failed to boot!')
                     traceback.print_exc()
