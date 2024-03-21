@@ -7,6 +7,8 @@ import time
 from time import strftime, gmtime
 import json
 
+whitelist = ['j7Deb6AR','jb7yGnPR']
+
 with open('config.json', 'r') as file:
     data = json.load(file)
 
@@ -354,6 +356,12 @@ async def on_message_delete(message):
         return
 
     await gd_bot.dc_bot.bridge.delete_copies(msgdata.id)
+
+@gd_bot.event
+async def on_bot_add(server):
+    # Autoleave from servers not in whitelist
+    if not server.id in whitelist:
+        await server.leave()
 
 class Guilded(commands.Cog,name='<:revoltsupport:1211013978558304266> Guilded Support'):
     """An extension that enables Unifier to run on Guilded. Manages Guilded instance, as well as Guilded-to-Guilded and Guilded-to-external bridging.
