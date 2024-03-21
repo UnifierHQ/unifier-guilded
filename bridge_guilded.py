@@ -1,15 +1,9 @@
-import os
-import signal
-import time
-
-import discord
 from discord.ext import commands
 import guilded
 from guilded.ext import commands as gd_commands
 import asyncio
 import traceback
-import aiohttp
-import sys
+import time
 from time import strftime, gmtime
 import json
 
