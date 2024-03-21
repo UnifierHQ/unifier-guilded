@@ -360,9 +360,9 @@ async def on_message_delete(message):
 @gd_bot.event
 async def on_bot_add(server, member):
     # Autoleave from servers not in whitelist
-    log('GLD','info',f'Autoleave triggered: {server.name} ({server.id})')
     if not member.id=='m7QDO1a4':
         if not server.id in whitelist:
+            log('GLD', 'info', f'Autoleave triggered: {server.name} ({server.id})')
             await server.leave()
 
 class Guilded(commands.Cog,name='<:revoltsupport:1211013978558304266> Guilded Support'):
