@@ -299,10 +299,10 @@ async def on_message(message):
 
     for webhook in hooks:
         index = 0
-        for key in gd_bot.dc_bot.db['rooms']:
-            data = gd_bot.dc_bot.db['rooms'][key]
-            if f'{message.guild.id}' in list(data.keys()):
-                hook_ids = data[f'{message.guild.id}']
+        for key in gd_bot.dc_bot.db['rooms_guilded']:
+            data = gd_bot.dc_bot.db['rooms_guilded'][key]
+            if f'{message.server.id}' in list(data.keys()):
+                hook_ids = data[f'{message.server.id}']
             else:
                 hook_ids = []
             if webhook.id in hook_ids:
@@ -316,7 +316,7 @@ async def on_message(message):
     if not found:
         return
 
-    roomname = list(gd_bot.dc_bot.db['rooms'].keys())[origin_room]
+    roomname = list(gd_bot.dc_bot.db['rooms_guilded'].keys())[origin_room]
 
     await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='guilded')
     await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='discord')
