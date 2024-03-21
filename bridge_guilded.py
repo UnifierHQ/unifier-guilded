@@ -361,7 +361,7 @@ async def on_message_delete(message):
     except:
         return
 
-    await gd_bot.dc_bot.delete_copies(msgdata.id)
+    await gd_bot.dc_bot.bridge.delete_copies(msgdata.id)
 
 class Guilded(commands.Cog,name='<:revoltsupport:1211013978558304266> Guilded Support'):
     """An extension that enables Unifier to run on Guilded. Manages Guilded instance, as well as Guilded-to-Guilded and Guilded-to-external bridging.
