@@ -331,16 +331,6 @@ async def on_message(message):
 async def on_message_delete(message):
     if message.webhook_id:
         return
-    roomname = None
-    for key in gd_bot.dc_bot.db['rooms_guilded']:
-        try:
-            if message.channel.id in str(gd_bot.dc_bot.db['rooms_guilded'][key][message.server.id]):
-                roomname = key
-                break
-        except:
-            continue
-    if not roomname:
-        return
     if message.author.id == gd_bot.user.id:
         return
     t = time.time()
