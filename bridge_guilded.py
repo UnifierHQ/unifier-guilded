@@ -325,6 +325,44 @@ async def on_message(message):
             continue
         await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform=platform)
 
+@gd_bot.event
+async def on_message_delete(message):
+    if message.webhook_id:
+        return
+    roomname = None
+    for key in gd_bot.dc_bot.db['rooms_guilded']:
+        try:
+            if message.channel.id in str(gd_bot.dc_bot.db['rooms_guilded'][key][message.server.id]):
+                roomname = key
+                break
+        except:
+            continue
+    if not roomname:
+        return
+    if message.author.id == gd_bot.user.id:
+        return
+    t = time.time()
+    if message.author.id in f'{gd_bot.dc_bot.db["banned"]}':
+        if t >= gd_bot.dc_bot.db["banned"][message.author.id]:
+            gd_bot.dc_bot.db["banned"].pop(message.author.id)
+            gd_bot.dc_bot.db.save_data()
+        else:
+            return
+    if message.server.id in f'{gd_bot.dc_bot.db["banned"]}':
+        if t >= gd_bot.dc_bot.db["banned"][message.server.id]:
+            gd_bot.dc_bot.db["banned"].pop(message.server.id)
+            gd_bot.dc_bot.db.save_data()
+        else:
+            return
+    try:
+        msgdata = await gd_bot.dc_bot.bridge.fetch_message(message.id)
+        if not msgdata.id == message.id:
+            raise ValueError()
+    except:
+        return
+
+    await gd_bot.dc_bot.delete_copies(msgdata.id)
+
 class Guilded(commands.Cog,name='<:revoltsupport:1211013978558304266> Guilded Support'):
     """An extension that enables Unifier to run on Guilded. Manages Guilded instance, as well as Guilded-to-Guilded and Guilded-to-external bridging.
 
