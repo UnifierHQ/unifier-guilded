@@ -272,6 +272,8 @@ async def unrestrict(ctx, *, target):
 async def on_message(message):
     if message.author.id == gd_bot.user.id:
         return
+    if message.webhook_id:
+        return
 
     t = time.time()
     if message.author.id in f'{gd_bot.dc_bot.db["banned"]}':
