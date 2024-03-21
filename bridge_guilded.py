@@ -355,15 +355,15 @@ class Guilded(commands.Cog,name='<:revoltsupport:1211013978558304266> Guilded Su
                 try:
                     self.bot.guilded_client.add_bot(self.bot)
                     await self.bot.guilded_client.start(data['guilded_token'])
-                except Exception as e:
-                    log('RVT', 'error', 'Guilded client failed to boot!')
+                except:
+                    log('GLD', 'error', 'Guilded client failed to boot!')
                     traceback.print_exc()
                     break
-                log('RVT', 'warn', 'Guilded client has exited. Rebooting in 10 seconds...')
+                log('GLD', 'warn', 'Guilded client has exited. Rebooting in 10 seconds...')
                 try:
                     await asyncio.sleep(10)
                 except:
-                    log('RVT', 'error', 'Couldn\'t sleep, exiting loop...')
+                    log('GLD', 'error', 'Couldn\'t sleep, exiting loop...')
                     break
 
 def setup(bot):
