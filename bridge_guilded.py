@@ -365,7 +365,7 @@ async def on_bot_add(server, member):
             log('GLD', 'info', f'Autoleave triggered: {server.name} ({server.id})')
             await server.leave()
 
-class Guilded(commands.Cog,name='<:revoltsupport:1211013978558304266> Guilded Support'):
+class Guilded(commands.Cog,name='<:GuildedSupport:1220134640996843621> Guilded Support'):
     """An extension that enables Unifier to run on Guilded. Manages Guilded instance, as well as Guilded-to-Guilded and Guilded-to-external bridging.
 
     Developed by Green"""
