@@ -115,7 +115,7 @@ async def bind(ctx,*,room=''):
         text = f'{text}\n\nPlease display these rules somewhere accessible.'
         embed = guilded.Embed(title='Please agree to the room rules first:',description=text)
         embed.set_footer(text='Failure to follow room rules may result in user or server restrictions.')
-        msg = await ctx.send('Please send "I agree" to bind to the room.',embed=embed)
+        msg = await ctx.send(f'Please send "{gd_bot.dc_bot.command_prefix}agree" to bind to the room.',embed=embed)
 
         def check(message):
             return message.author.id==ctx.author.id
@@ -125,7 +125,7 @@ async def bind(ctx,*,room=''):
         except:
             return await ctx.send('Timed out.')
 
-        if resp.content=='reject':
+        if not resp.content==f'{gd_bot.dc_bot.command_prefix}agree':
             return
         webhook = await ctx.channel.create_webhook(name='Unifier Bridge')
         newdata = gd_bot.dc_bot.db['rooms_guilded'][room]
