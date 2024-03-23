@@ -100,11 +100,11 @@ async def bind(ctx,*,room=''):
         except:
             guild = []
         if len(guild) >= 1:
-            return await ctx.send('Your server is already linked to this room.\n**Accidentally deleted the webhook?** `u!unlink` it then `u!link` it back.')
+            return await ctx.send(f'Your server is already linked to this room.\n**Accidentally deleted the webhook?** `{gd_bot.dc_bot.command_prefix}unlink` it then `{gd_bot.dc_bot.command_prefix}link` it back.')
         index = 0
         text = ''
         if len(gd_bot.dc_bot.db['rules'][room])==0:
-            text = f'No rules exist yet for this room! For now, follow the main room\'s rules.\nYou can always view rules if any get added using `u!rules {room}`.'
+            text = f'No rules exist yet for this room! For now, follow the main room\'s rules.\nYou can always view rules if any get added using `{gd_bot.dc_bot.command_prefix}rules {room}`.'
         else:
             for rule in gd_bot.dc_bot.db['rules'][room]:
                 if text=='':
