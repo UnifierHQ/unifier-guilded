@@ -68,7 +68,7 @@ def is_room_locked(room,db):
 
 @gd_bot.event
 async def on_ready():
-    log('RVT','ok','Guilded client booted!')
+    log('GLD','ok','Guilded client booted!')
 
 @gd_bot.command(aliases=['hello'])
 async def hi(ctx):
@@ -387,6 +387,7 @@ class Guilded(commands.Cog,name='<:GuildedSupport:1220134640996843621> Guilded S
             self.bot.db.save_data()
             while True:
                 try:
+                    log('GLD', 'info', 'Booting Guilded client...')
                     self.bot.guilded_client.add_bot(self.bot)
                     await self.bot.guilded_client.start(data['guilded_token'])
                 except:
