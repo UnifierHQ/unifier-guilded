@@ -419,5 +419,5 @@ class Guilded(commands.Cog,name='<:GuildedSupport:1220134640996843621> Guilded S
                     log('GLD', 'error', 'Couldn\'t sleep, exiting loop...')
                     break
 
-def setup(bot):
-    bot.add_cog(Guilded(bot))
+async def setup(bot):
+    await bot.add_cog(Guilded(bot))
