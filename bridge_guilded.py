@@ -22,7 +22,7 @@ from guilded.ext import commands as gd_commands
 import asyncio
 import traceback
 import time
-from time import strftime, gmtime
+from utils import log
 import json
 
 whitelist = ['j7Deb6AR','jb7yGnPR']
@@ -45,22 +45,12 @@ class GuildedBot(gd_commands.Bot):
     def add_bot(self,bot):
         self.dc_bot: commands.Bot = bot
 
+    def add_logger(self,logger):
+        self.logger = logger
+
 
 gd_bot = GuildedBot(command_prefix=data['prefix'])
-
-def log(type='???',status='ok',content='None'):
-    time1 = strftime("%Y.%m.%d %H:%M:%S", gmtime())
-    if status=='ok':
-        status = ' OK  '
-    elif status=='error':
-        status = 'ERROR'
-    elif status=='warn':
-        status = 'WARN '
-    elif status=='info':
-        status = 'INFO '
-    else:
-        raise ValueError('Invalid status type provided')
-    print(f'[{type} | {time1} | {status}] {content}')
+logger = None
 
 def is_user_admin(id):
     try:
@@ -86,7 +76,7 @@ def is_room_locked(room,db):
 
 @gd_bot.event
 async def on_ready():
-    log('GLD','ok','Guilded client booted!')
+    gd_bot.logger.info('Guilded client booted!')
 
 @gd_bot.command(aliases=['hello'])
 async def hi(ctx):
@@ -380,7 +370,7 @@ async def on_bot_add(server, member):
     # Autoleave from servers not in whitelist
     if not member.id=='m7QDO1a4':
         if not server.id in whitelist:
-            log('GLD', 'info', f'Autoleave triggered: {server.name} ({server.id})')
+            gd_bot.logger.info(f'Autoleave triggered: {server.name} ({server.id})')
             await server.leave()
 
 class Guilded(commands.Cog,name='<:GuildedSupport:1220134640996843621> Guilded Support'):
@@ -394,29 +384,30 @@ class Guilded(commands.Cog,name='<:GuildedSupport:1220134640996843621> Guilded S
         if not hasattr(self.bot, 'guilded_client'):
             self.bot.guilded_client = gd_bot
             self.bot.guilded_client_task = asyncio.create_task(self.guilded_boot())
+        self.logger = log.buildlogger(self.bot.package, 'guilded.core', self.bot.loglevel)
 
     async def guilded_boot(self):
         if not self.bot.guilded_client.ws:
-            log('DAT','info','Syncing Guilded rooms...')
+            self.logger.info('Syncing Guilded rooms...')
             for key in self.bot.db['rooms']:
                 if not key in list(self.bot.db['rooms_guilded'].keys()):
                     self.bot.db['rooms_guilded'].update({key: {}})
-                    log('DAT','ok','Synced room '+key)
+                    self.logger.debug('Synced room '+key)
             self.bot.db.save_data()
             while True:
                 try:
-                    log('GLD', 'info', 'Booting Guilded client...')
+                    self.logger.info('Booting Guilded client...')
                     self.bot.guilded_client.add_bot(self.bot)
+                    self.bot.guilded_client.add_logger(log.buildlogger(self.bot.package, 'guilded.client', self.bot.loglevel))
                     await self.bot.guilded_client.start(data['guilded_token'])
                 except:
-                    log('GLD', 'error', 'Guilded client failed to boot!')
-                    traceback.print_exc()
+                    self.logger.exception('Guilded client failed to boot!')
                     break
-                log('GLD', 'warn', 'Guilded client has exited. Rebooting in 10 seconds...')
+                self.logger.warn('Guilded client has exited. Rebooting in 10 seconds...')
                 try:
                     await asyncio.sleep(10)
                 except:
-                    log('GLD', 'error', 'Couldn\'t sleep, exiting loop...')
+                    self.logger.error('Couldn\'t sleep, exiting loop...')
                     break
 
 def setup(bot):
