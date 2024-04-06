@@ -24,11 +24,18 @@ import traceback
 import time
 from utils import log
 import json
+from dotenv import load_dotenv
+import os
 
 whitelist = ['j7Deb6AR','jb7yGnPR']
 
 with open('config.json', 'r') as file:
     data = json.load(file)
+
+load_dotenv() # Do not check success
+
+if not "TOKEN_REVOLT" in os.environ:
+    raise RuntimeError('No Revolt token found')
 
 owner = data['owner']
 external_services = data['external']
@@ -409,7 +416,7 @@ class Guilded(commands.Cog,name='<:GuildedSupport:1220134640996843621> Guilded S
                     self.logger.info('Booting Guilded client...')
                     self.bot.guilded_client.add_bot(self.bot)
                     self.bot.guilded_client.add_logger(log.buildlogger(self.bot.package, 'guilded.client', self.bot.loglevel))
-                    await self.bot.guilded_client.start(data['guilded_token'])
+                    await self.bot.guilded_client.start(os.environ.get('TOKEN_GUILDED'))
                 except:
                     self.logger.exception('Guilded client failed to boot!')
                     break
