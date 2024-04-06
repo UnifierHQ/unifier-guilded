@@ -99,9 +99,19 @@ async def bind(ctx,*,room=''):
         room = 'main'
         await ctx.send('**No room was given, defaulting to main**')
     try:
-        data = gd_bot.dc_bot.db['rooms_guilded'][room]
+        data = gd_bot.dc_bot.db['rooms'][room]
     except:
-        return await ctx.send('This isn\'t a valid room. Try `main`, `pr`, `prcomments`, or `liveries` instead.')
+        return await ctx.send(f'This isn\'t a valid room. Run `{gd_bot.command_prefix}rooms` for a list of rooms.')
+    for room in list(gd_bot.dc_bot.db['rooms_guilded'].keys()):
+        # Prevent duplicate binding
+        try:
+            hook_id = gd_bot.dc_bot.db['rooms_guilded'][room][f'{ctx.guild.id}'][0]
+            hook = await ctx.guild.fetch_webhook(hook_id)
+            if hook.channel_id == ctx.channel.id:
+                return await ctx.send(
+                    f'This channel is already linked to `{room}`!\nRun `{gd_bot.command_prefix}unbind {room} to unbind from it.')
+        except:
+            continue
     try:
         try:
             guild = data[f'{ctx.guild.id}']
