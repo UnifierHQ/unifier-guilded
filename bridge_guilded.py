@@ -109,7 +109,7 @@ async def bind(ctx,*,room=''):
             hook = await ctx.guild.fetch_webhook(hook_id)
             if hook.channel_id == ctx.channel.id:
                 return await ctx.send(
-                    f'This channel is already linked to `{room}`!\nRun `{gd_bot.command_prefix}unbind {room} to unbind from it.')
+                    f'This channel is already linked to `{room}`!\nRun `{gd_bot.command_prefix}unbind {room}` to unbind from it.')
         except:
             continue
     try:
