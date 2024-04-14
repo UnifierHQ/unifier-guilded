@@ -11,7 +11,7 @@ Guilded  instance and allows messages from Guilded to be bridged to other platfo
 It is like [Unifier Revolt Support](https://github.com/greeeen-dev/unifier-revolt), except it is for Guilded.
 
 ## Requirements
-Unifier v1.1.4 or newer is required.
+Unifier v1.1.8 or newer is required.
 
 ## Setup
 To install Unifier Revolt Support, you can run `u!install-guilded` on the bot. If you have a different GitHub user URL 
