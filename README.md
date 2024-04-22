@@ -1,6 +1,9 @@
 # Unifier Guilded Support
 Unifier Guilded Support extension for Unifier bot
 
+> [!WARNING]
+> This is beta software. Things may not work as intended.
+
 > [!NOTE]
 > This is a Unifier **plugin**! To access Unifier, go [here](https://github.com/greeeen-dev/unifier).
 
