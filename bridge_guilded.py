@@ -37,13 +37,6 @@ load_dotenv() # Do not check success
 if not "TOKEN_REVOLT" in os.environ:
     raise RuntimeError('No Revolt token found')
 
-owner = data['owner']
-external_services = data['external']
-allow_prs = data["allow_prs"]
-admin_ids = data['admin_ids']
-pr_room_index = data["pr_room_index"] # If this is 0, then the oldest room will be used as the PR room.
-pr_ref_room_index = data["pr_ref_room_index"]
-
 class GuildedBot(gd_commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -349,7 +342,7 @@ async def on_message(message):
 
     await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='guilded')
     await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='discord')
-    for platform in external_services:
+    for platform in gd_bot.dc_bot.config['external']:
         if platform=='guilded':
             continue
         await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform=platform)
@@ -396,7 +389,7 @@ class Guilded(commands.Cog,name='<:GuildedSupport:1220134640996843621> Guilded S
     Developed by Green"""
     def __init__(self,bot):
         self.bot = bot
-        if not 'guilded' in external_services:
+        if not 'guilded' in self.bot.config['external']:
             raise RuntimeError('guilded is not listed as an external service in config.json. More info: https://unichat-wiki.pixels.onl/setup-selfhosted/getting-started#installing-revolt-support')
         if not hasattr(self.bot, 'guilded_client'):
             self.bot.guilded_client = gd_bot
