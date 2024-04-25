@@ -420,5 +420,39 @@ class Guilded(commands.Cog,name='<:GuildedSupport:1220134640996843621> Guilded S
                     self.logger.error('Couldn\'t sleep, exiting loop...')
                     break
 
+    @commands.command(name='stop-guilded', hidden=True)
+    async def stop_guilded(self, ctx):
+        """Kills the Guilded client. This is automatically done when upgrading Unifier."""
+        if not ctx.author.id == self.bot.config['owner']:
+            return
+        try:
+            await self.bot.guilded_client.close()
+            self.bot.guilded_client_task.cancel()
+            del self.bot.guilded_client
+            self.bot.unload_extension('cogs.bridge_guilded')
+            await ctx.send('Guilded client stopped.\nTo restart, run `{self.bot.command_prefix}load guilded`')
+        except Exception as e:
+            if isinstance(e, AttributeError):
+                return await ctx.send('Guilded client is already offline.')
+            traceback.print_exc()
+            await ctx.send('Something went wrong while killing the instance.')
+
+    @commands.command(name='restart-guilded', hidden=True)
+    async def restart_guilded(self, ctx):
+        """Restarts the Guilded client."""
+        if not ctx.author.id == self.bot.config['owner']:
+            return
+        try:
+            await self.bot.guilded_client.close()
+            self.bot.guilded_client_task.cancel()
+            del self.bot.guilded_client
+            self.bot.reload_extension('cogs.bridge_guilded')
+            await ctx.send('Guilded client restarted.')
+        except Exception as e:
+            if isinstance(e, AttributeError):
+                return await ctx.send('Guilded client is not offline.')
+            traceback.print_exc()
+            await ctx.send('Something went wrong while restarting the instance.')
+
 def setup(bot):
     bot.add_cog(Guilded(bot))
