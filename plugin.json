@@ -3,8 +3,8 @@
   "name": "Guilded Support",
   "description": "Unifier Guilded Support extension",
   "version": "v1.0.0",
-  "release": 5,
-  "minimum": 36,
+  "release": 6,
+  "minimum": 46,
   "shutdown": true,
   "modules": [
     "bridge_guilded.py"
