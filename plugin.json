@@ -4,7 +4,7 @@
   "description": "Unifier Guilded Support extension",
   "version": "v1.0.0",
   "release": 6,
-  "minimum": 46,
+  "minimum": 47,
   "shutdown": true,
   "modules": [
     "bridge_guilded.py"
