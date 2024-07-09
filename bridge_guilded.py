@@ -41,6 +41,8 @@ class GuildedBot(gd_commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.dc_bot = None
+        self.logger = None
+        self.compatibility_mode = False
 
     def add_bot(self,bot):
         self.dc_bot: commands.Bot = bot
@@ -77,6 +79,8 @@ def is_room_locked(room,db):
 @gd_bot.event
 async def on_ready():
     gd_bot.logger.info('Guilded client booted!')
+    if not hasattr(gd_bot.dc_bot, 'platforms_former'):
+        gd_bot.compatibility_mode = True
 
 @gd_bot.command(aliases=['hello'])
 async def hi(ctx):
@@ -102,10 +106,17 @@ async def bind(ctx,*,room=''):
         data = gd_bot.dc_bot.db['rooms'][room]
     except:
         return await ctx.send(f'This isn\'t a valid room. Run `{gd_bot.command_prefix}rooms` for a list of rooms.')
-    for room in list(gd_bot.dc_bot.db['rooms_guilded'].keys()):
+    if gd_bot.compatibility_mode:
+        roomkey = 'rooms_guilded'
+    else:
+        roomkey = 'rooms'
+    for room in list(gd_bot.dc_bot.db[roomkey].keys()):
         # Prevent duplicate binding
         try:
-            hook_id = gd_bot.dc_bot.db['rooms_guilded'][room][f'{ctx.guild.id}'][0]
+            if gd_bot.compatibility_mode:
+                hook_id = gd_bot.dc_bot.db['rooms_guilded'][room][f'{ctx.guild.id}'][0]
+            else:
+                hook_id = gd_bot.dc_bot.db['rooms'][room]['guilded'][f'{ctx.guild.id}'][0]
             hook = await ctx.guild.fetch_webhook(hook_id)
             if hook.channel_id == ctx.channel.id:
                 return await ctx.send(
@@ -146,10 +157,20 @@ async def bind(ctx,*,room=''):
         if not resp.content==f'{gd_bot.dc_bot.command_prefix}agree':
             return
         webhook = await ctx.channel.create_webhook(name='Unifier Bridge')
-        newdata = gd_bot.dc_bot.db['rooms_guilded'][room]
+        if gd_bot.compatibility_mode:
+            newdata = gd_bot.dc_bot.db['rooms_guilded'][room]
+        else:
+            try:
+                newdata = gd_bot.dc_bot.db['rooms'][room]['guilded']
+            except:
+                newdata = {}
+                gd_bot.dc_bot.db['rooms'][room].update({'guilded':{}})
         guild = [webhook.id]
         newdata.update({f'{ctx.guild.id}':guild})
-        gd_bot.dc_bot.db['rooms_guilded'][room] = newdata
+        if gd_bot.compatibility_mode:
+            gd_bot.dc_bot.db['rooms_guilded'][room] = newdata
+        else:
+            gd_bot.dc_bot.db['rooms'][room]['guilded'] = newdata
         gd_bot.dc_bot.db.save_data()
         await ctx.send('Linked channel with network!')
 
@@ -168,9 +189,12 @@ async def unbind(ctx,*,room=''):
     if not ctx.author.guild_permissions.manage_channels and not is_user_admin(ctx.author.id):
         return await ctx.send('You don\'t have the necessary permissions.')
     try:
-        data = gd_bot.dc_bot.db['rooms_guilded'][room]
+        if gd_bot.compatibility_mode:
+            data = gd_bot.dc_bot.db['rooms_guilded'][room]
+        else:
+            data = gd_bot.dc_bot.db['rooms'][room]['guilded']
     except:
-        return await ctx.send('This isn\'t a valid room. Try `main`, `pr`, `prcomments`, or `liveries` instead.')
+        return await ctx.send(f'This isn\'t a valid room. Run `{gd_bot.dc_bot.command_prefix}rooms` on Discord for a full list of rooms..')
     try:
         try:
             hooks = await ctx.guild.webhooks()
@@ -185,7 +209,10 @@ async def unbind(ctx,*,room=''):
                 await webhook.delete()
                 break
         data.pop(f'{ctx.guild.id}')
-        gd_bot.dc_bot.db['rooms_guilded'][room] = data
+        if gd_bot.compatibility_mode:
+            gd_bot.dc_bot.db['rooms_guilded'][room] = data
+        else:
+            gd_bot.dc_bot.db['rooms'][room]['guilded'] = data
         gd_bot.dc_bot.db.save_data()
         await ctx.send('Unlinked channel from network!')
     except:
@@ -319,10 +346,22 @@ async def on_message(message):
     found = False
     origin_room = 0
 
+    if gd_bot.compatibility_mode:
+        roomkey = 'rooms_guilded'
+    else:
+        roomkey = 'rooms'
+
     for webhook in hooks:
         index = 0
-        for key in gd_bot.dc_bot.db['rooms_guilded']:
-            data = gd_bot.dc_bot.db['rooms_guilded'][key]
+        for key in gd_bot.dc_bot.db[roomkey]:
+            if gd_bot.compatibility_mode:
+                data = gd_bot.dc_bot.db['rooms_guilded'][key]
+            else:
+                try:
+                    data = gd_bot.dc_bot.db['rooms'][key]['guilded']
+                except:
+                    data = {}
+                    gd_bot.dc_bot.db['rooms'][key].update({'guilded':{}})
             if f'{message.server.id}' in list(data.keys()):
                 hook_ids = data[f'{message.server.id}']
             else:
@@ -338,14 +377,14 @@ async def on_message(message):
     if not found:
         return
 
-    roomname = list(gd_bot.dc_bot.db['rooms_guilded'].keys())[origin_room]
+    roomname = list(gd_bot.dc_bot.db[roomkey].keys())[origin_room]
 
-    await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='guilded')
-    await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='discord')
+    await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='guilded', source='guilded')
+    await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='discord', source='guilded')
     for platform in gd_bot.dc_bot.config['external']:
         if platform=='guilded':
             continue
-        await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform=platform)
+        await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform=platform, source='guilded')
 
 @gd_bot.event
 async def on_message_delete(message):
@@ -398,12 +437,14 @@ class Guilded(commands.Cog,name='<:GuildedSupport:1220134640996843621> Guilded S
 
     async def guilded_boot(self):
         if not self.bot.guilded_client.ws:
-            self.logger.info('Syncing Guilded rooms...')
-            for key in self.bot.db['rooms']:
-                if not key in list(self.bot.db['rooms_guilded'].keys()):
-                    self.bot.db['rooms_guilded'].update({key: {}})
-                    self.logger.debug('Synced room '+key)
-            self.bot.db.save_data()
+            if not hasattr(gd_bot.dc_bot, 'platforms_former'):
+                self.logger.warning('Guilded Support is starting in legacy mode (non-NUPS).')
+                self.logger.info('Syncing Guilded rooms...')
+                for key in self.bot.db['rooms']:
+                    if not key in list(self.bot.db['rooms_guilded'].keys()):
+                        self.bot.db['rooms_guilded'].update({key: {}})
+                        self.logger.debug('Synced room '+key)
+                self.bot.db.save_data()
             while True:
                 try:
                     self.logger.info('Booting Guilded client...')
@@ -422,7 +463,7 @@ class Guilded(commands.Cog,name='<:GuildedSupport:1220134640996843621> Guilded S
 
     @commands.command(name='stop-guilded', hidden=True)
     async def stop_guilded(self, ctx):
-        """Kills the Guilded client. This is automatically done when upgrading Unifier."""
+        """Stops the Guilded client. This is automatically done when upgrading Unifier."""
         if not ctx.author.id == self.bot.config['owner']:
             return
         try:
@@ -430,12 +471,12 @@ class Guilded(commands.Cog,name='<:GuildedSupport:1220134640996843621> Guilded S
             self.bot.guilded_client_task.cancel()
             del self.bot.guilded_client
             self.bot.unload_extension('cogs.bridge_guilded')
-            await ctx.send('Guilded client stopped.\nTo restart, run `{self.bot.command_prefix}load guilded`')
+            await ctx.send(f'Guilded client stopped.\nTo restart, run `{self.bot.command_prefix}load guilded`')
         except Exception as e:
             if isinstance(e, AttributeError):
                 return await ctx.send('Guilded client is already offline.')
             traceback.print_exc()
-            await ctx.send('Something went wrong while killing the instance.')
+            await ctx.send('Something went wrong while stopping the instance.')
 
     @commands.command(name='restart-guilded', hidden=True)
     async def restart_guilded(self, ctx):
