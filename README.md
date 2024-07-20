@@ -2,14 +2,15 @@
 Unifier Guilded Support extension for Unifier bot
 
 > [!WARNING]
-> This is beta software. Things may not work as intended.
+> We've dropped all feature updates for Guilded. The final feature update will be NUPS implementation, then the plugin
+> will enter maintenance mode.
 
 > [!NOTE]
 > This is a Unifier **plugin**! To access Unifier, go [here](https://github.com/greeeen-dev/unifier).
 
 ## What is this?
 This is a plugin for Unifier which allows it to work on Guilded, a Discord alternative. This plugin manages the 
-Guilded  instance and allows messages from Guilded to be bridged to other platforms.
+Guilded instance and allows messages from Guilded to be bridged to other platforms.
 
 It is like [Unifier Revolt Support](https://github.com/greeeen-dev/unifier-revolt), except it is for Guilded.
 
