@@ -110,17 +110,17 @@ async def bind(ctx,*,room=''):
         roomkey = 'rooms_guilded'
     else:
         roomkey = 'rooms'
-    for room in list(gd_bot.dc_bot.db[roomkey].keys()):
+    for duplicate in list(gd_bot.dc_bot.db[roomkey].keys()):
         # Prevent duplicate binding
         try:
             if gd_bot.compatibility_mode:
-                hook_id = gd_bot.dc_bot.db['rooms_guilded'][room][f'{ctx.guild.id}'][0]
+                hook_id = gd_bot.dc_bot.db['rooms_guilded'][duplicate][f'{ctx.guild.id}'][0]
             else:
-                hook_id = gd_bot.dc_bot.db['rooms'][room]['guilded'][f'{ctx.guild.id}'][0]
+                hook_id = gd_bot.dc_bot.db['rooms'][duplicate]['guilded'][f'{ctx.guild.id}'][0]
             hook = await ctx.guild.fetch_webhook(hook_id)
             if hook.channel_id == ctx.channel.id:
                 return await ctx.send(
-                    f'This channel is already linked to `{room}`!\nRun `{gd_bot.command_prefix}unbind {room}` to unbind from it.')
+                    f'This channel is already linked to `{duplicate}`!\nRun `{gd_bot.command_prefix}unbind {duplicate}` to unbind from it.')
         except:
             continue
     try:
@@ -378,13 +378,19 @@ async def on_message(message):
         return
 
     roomname = list(gd_bot.dc_bot.db[roomkey].keys())[origin_room]
-
-    await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='guilded', source='guilded')
-    await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='discord', source='guilded')
+    if self.compatibility_mode:
+        await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='guilded')
+        await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='discord')
+    else:
+        await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='guilded', source='guilded')
+        await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='discord', source='guilded')
     for platform in gd_bot.dc_bot.config['external']:
         if platform=='guilded':
             continue
-        await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform=platform, source='guilded')
+        if self.compatibility_mode:
+            await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform=platform, source='guilded')
+        else:
+            await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform=platform, source='guilded')
 
 @gd_bot.event
 async def on_message_delete(message):
