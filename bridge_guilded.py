@@ -378,7 +378,7 @@ async def on_message(message):
         return
 
     roomname = list(gd_bot.dc_bot.db[roomkey].keys())[origin_room]
-    if self.compatibility_mode:
+    if gd_bot.compatibility_mode:
         await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='guilded')
         await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='discord')
     else:
@@ -387,7 +387,7 @@ async def on_message(message):
     for platform in gd_bot.dc_bot.config['external']:
         if platform=='guilded':
             continue
-        if self.compatibility_mode:
+        if gd_bot.compatibility_mode:
             await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform=platform, source='guilded')
         else:
             await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform=platform, source='guilded')
