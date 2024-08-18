@@ -81,7 +81,7 @@ class GuildedPlatform(platform_base.PlatformBase):
         return user.name
 
     def avatar(self, user):
-        return user.avatar.url if user.avatar else None
+        return user.avatar.url.split('?')[0] if user.avatar else None
 
     def is_bot(self, user):
         return user.bot
