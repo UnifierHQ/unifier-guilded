@@ -388,7 +388,7 @@ async def on_message(message):
         if platform=='guilded':
             continue
         if gd_bot.compatibility_mode:
-            await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform=platform, source='guilded')
+            await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform=platform)
         else:
             await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform=platform, source='guilded')
 
