@@ -34,8 +34,8 @@ with open('config.json', 'r') as file:
 
 load_dotenv() # Do not check success
 
-if not "TOKEN_REVOLT" in os.environ:
-    raise RuntimeError('No Revolt token found')
+if not "TOKEN_GUILDED" in os.environ:
+    raise RuntimeError('No Guilded token found')
 
 class GuildedBot(gd_commands.Bot):
     def __init__(self, *args, **kwargs):
