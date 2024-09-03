@@ -1,10 +1,6 @@
 # Unifier Guilded Support
 Unifier Guilded Support extension for Unifier bot
 
-> [!WARNING]
-> We've dropped all feature updates for Guilded. The final feature update will be NUPS implementation, then the plugin
-> will enter maintenance mode.
-
 > [!NOTE]
 > This is a Unifier **plugin**! To access Unifier, go [here](https://github.com/greeeen-dev/unifier).
 
