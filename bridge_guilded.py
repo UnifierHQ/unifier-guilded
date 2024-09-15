@@ -94,35 +94,45 @@ async def send(ctx,*,content):
     await ctx.send('check discord')
 
 @gd_bot.command(aliases=['link','connect','federate','bridge'])
-async def bind(ctx,*,room=''):
+async def bind(ctx,*,room):
     if not ctx.author.guild_permissions.manage_channels and not is_user_admin(ctx.author.id):
         return await ctx.send('You don\'t have the necessary permissions.')
     if is_room_restricted(room,gd_bot.dc_bot.db) and not is_user_admin(ctx.author.id):
         return await ctx.send('Only admins can bind channels to restricted rooms.')
-    if room=='' or not room:
-        room = 'main'
-        await ctx.send('**No room was given, defaulting to main**')
     try:
         data = gd_bot.dc_bot.db['rooms'][room]
     except:
         return await ctx.send(f'This isn\'t a valid room. Run `{gd_bot.command_prefix}rooms` for a list of rooms.')
     if gd_bot.compatibility_mode:
         roomkey = 'rooms_guilded'
+        if not room in gd_bot.dc_bot.db['rooms_guilded'].keys():
+            return await ctx.send(
+                f'You need to run `{gd_bot.dc_bot.command_prefix}restart-guilded` on Discord for this room to be available.'
+            )
     else:
         roomkey = 'rooms'
-    for duplicate in list(gd_bot.dc_bot.db[roomkey].keys()):
-        # Prevent duplicate binding
-        try:
-            if gd_bot.compatibility_mode:
-                hook_id = gd_bot.dc_bot.db['rooms_guilded'][duplicate][f'{ctx.guild.id}'][0]
-            else:
-                hook_id = gd_bot.dc_bot.db['rooms'][duplicate]['guilded'][f'{ctx.guild.id}'][0]
-            hook = await ctx.guild.fetch_webhook(hook_id)
-            if hook.channel_id == ctx.channel.id:
-                return await ctx.send(
-                    f'This channel is already linked to `{duplicate}`!\nRun `{gd_bot.command_prefix}unbind {duplicate}` to unbind from it.')
-        except:
-            continue
+        if data['meta']['private']:
+            return await ctx.send('Private Rooms are not supported yet!')
+
+    duplicate = None
+    if gd_bot.compatibility_mode:
+        for roomname in list(gd_bot.dc_bot.db[roomkey].keys()):
+            # Prevent duplicate binding
+            try:
+                channel = gd_bot.dc_bot.db[roomkey][roomname][f'{ctx.guild.id}'][0]
+                if channel == ctx.channel.id:
+                    duplicate = roomname
+                    break
+            except:
+                continue
+    else:
+        duplicate = gd_bot.dc_bot.bridge.check_duplicate(ctx.channel, platform='guilded')
+
+    if duplicate:
+        return await ctx.send(
+            f'This channel is already linked to `{duplicate}`!\nRun `{gd_bot.command_prefix}unbind {duplicate}` to unbind from it.'
+        )
+
     try:
         try:
             guild = data[f'{ctx.guild.id}']
@@ -158,19 +168,9 @@ async def bind(ctx,*,room=''):
             return
         webhook = await ctx.channel.create_webhook(name='Unifier Bridge')
         if gd_bot.compatibility_mode:
-            newdata = gd_bot.dc_bot.db['rooms_guilded'][room]
+            gd_bot.dc_bot.db['rooms_guilded'][room].update({f'{ctx.guild.id}':[webhook.id, ctx.channel.id]})
         else:
-            try:
-                newdata = gd_bot.dc_bot.db['rooms'][room]['guilded']
-            except:
-                newdata = {}
-                gd_bot.dc_bot.db['rooms'][room].update({'guilded':{}})
-        guild = [webhook.id]
-        newdata.update({f'{ctx.guild.id}':guild})
-        if gd_bot.compatibility_mode:
-            gd_bot.dc_bot.db['rooms_guilded'][room] = newdata
-        else:
-            gd_bot.dc_bot.db['rooms'][room]['guilded'] = newdata
+            await gd_bot.dc_bot.bridge.join_room(ctx.author, room, ctx.channel, platform='guilded', webhook_id=webhook.id)
         gd_bot.dc_bot.db.save_data()
         await ctx.send('Linked channel with network!')
 
@@ -183,38 +183,47 @@ async def bind(ctx,*,room=''):
         raise
 
 @gd_bot.command(aliases=['unlink','disconnect'])
-async def unbind(ctx,*,room=''):
-    if room=='':
-        return await ctx.send('You must specify the room to unbind from.')
+async def unbind(ctx,*,room=None):
+    if not room:
+        # room autodetect
+        if not gd_bot.compatibility_mode:
+            room = gd_bot.dc_bot.bridge.check_duplicate(ctx.channel, platform='revolt')
+        if not room:
+            return await ctx.send('This channel is not connected to a room.')
     if not ctx.author.guild_permissions.manage_channels and not is_user_admin(ctx.author.id):
         return await ctx.send('You don\'t have the necessary permissions.')
+    if not room in gd_bot.dc_bot.bridge.rooms.keys():
+        return await ctx.send('This isn\'t a valid room.')
     try:
         if gd_bot.compatibility_mode:
             data = gd_bot.dc_bot.db['rooms_guilded'][room]
         else:
-            data = gd_bot.dc_bot.db['rooms'][room]['guilded']
-    except:
-        return await ctx.send(f'This isn\'t a valid room. Run `{gd_bot.dc_bot.command_prefix}rooms` on Discord for a full list of rooms..')
-    try:
+            data = gd_bot.dc_bot.bridge.get_room(room.lower())['guilded']
+
+        hook_deleted = True
         try:
-            hooks = await ctx.guild.webhooks()
+            hooks = await ctx.server.webhooks()
+            if f'{ctx.server.id}' in list(data.keys()):
+                hook_ids = data[f'{ctx.server.id}']
+            else:
+                hook_ids = []
+            for webhook in hooks:
+                if webhook.id in hook_ids:
+                    await webhook.delete()
+                    break
         except:
-            return await ctx.send('I cannot manage webhooks.')
-        if f'{ctx.guild.id}' in list(data.keys()):
-            hook_ids = data[f'{ctx.guild.id}']
-        else:
-            hook_ids = []
-        for webhook in hooks:
-            if webhook.id in hook_ids:
-                await webhook.delete()
-                break
-        data.pop(f'{ctx.guild.id}')
+            hook_deleted = False
+
         if gd_bot.compatibility_mode:
-            gd_bot.dc_bot.db['rooms_guilded'][room] = data
+            gd_bot.dc_bot.db['rooms_guilded'][room].pop(f'{ctx.server.id}')
+            gd_bot.dc_bot.db.save_data()
         else:
-            gd_bot.dc_bot.db['rooms'][room]['guilded'] = data
-        gd_bot.dc_bot.db.save_data()
-        await ctx.send('Unlinked channel from network!')
+            await gd_bot.dc_bot.bridge.leave_room(ctx.server, room, platform='guilded')
+
+        if hook_deleted:
+            await ctx.send('Unlinked channel from network!')
+        else:
+            await ctx.send('Unlinked channel from network, but webhook cold not be deleted')
     except:
         await ctx.send('Something went wrong - check my permissions.')
         raise
@@ -338,46 +347,37 @@ async def on_message(message):
     if message.content.startswith(gd_bot.command_prefix):
         return await gd_bot.process_commands(message)
 
-    try:
-        hooks = await message.channel.webhooks()
-    except:
-        hooks = await message.guild.webhooks()
-
-    found = False
-    origin_room = 0
-
     if gd_bot.compatibility_mode:
-        roomkey = 'rooms_guilded'
-    else:
-        roomkey = 'rooms'
+        found = False
+        origin_room = 0
 
-    for webhook in hooks:
-        index = 0
-        for key in gd_bot.dc_bot.db[roomkey]:
-            if gd_bot.compatibility_mode:
+        hooks = await message.server.webhooks()
+        for webhook in hooks:
+            index = 0
+            for key in gd_bot.dc_bot.db['rooms_guilded']:
                 data = gd_bot.dc_bot.db['rooms_guilded'][key]
-            else:
-                try:
-                    data = gd_bot.dc_bot.db['rooms'][key]['guilded']
-                except:
-                    data = {}
-                    gd_bot.dc_bot.db['rooms'][key].update({'guilded':{}})
-            if f'{message.server.id}' in list(data.keys()):
-                hook_ids = data[f'{message.server.id}']
-            else:
-                hook_ids = []
-            if webhook.id in hook_ids:
-                origin_room = index
-                found = True
+                if f'{message.server.id}' in list(data.keys()):
+                    hook_ids = data[f'{message.server.id}']
+                else:
+                    hook_ids = []
+                if webhook.id in hook_ids:
+                    origin_room = index
+                    found = True
+                    break
+                index += 1
+            if found:
                 break
-            index += 1
-        if found:
-            break
 
-    if not found:
-        return
+        if not found:
+            return
 
-    roomname = list(gd_bot.dc_bot.db[roomkey].keys())[origin_room]
+        roomname = list(gd_bot.dc_bot.db['rooms_guilded'].keys())[origin_room]
+    else:
+        roomname = gd_bot.dc_bot.bridge.get_channel_room(message.channel, platform='guilded')
+
+        if not roomname:
+            return
+
     if gd_bot.compatibility_mode:
         await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='guilded')
         await gd_bot.dc_bot.bridge.send(room=roomname, message=message, platform='discord')
