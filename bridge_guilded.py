@@ -23,14 +23,11 @@ import asyncio
 import traceback
 import time
 from utils import log
-import json
 from dotenv import load_dotenv
 import os
 
-whitelist = ['j7Deb6AR','jb7yGnPR']
-
-with open('config.json', 'r') as file:
-    data = json.load(file)
+enable_whitelist = False
+whitelist = []
 
 load_dotenv() # Do not check success
 
@@ -51,29 +48,27 @@ class GuildedBot(gd_commands.Bot):
         self.logger = logger
 
 
-gd_bot = GuildedBot(command_prefix=data['prefix'])
+gd_bot = GuildedBot(command_prefix='u!')
 logger = None
 
-def is_user_admin(id):
+admin_ids = []
+
+def is_user_admin(user_id):
     try:
-        global admin_ids
-        return id in admin_ids
+        return user_id in admin_ids
     except:
-        print("There was an error in 'is_user_admin(id)', for security reasons permission was resulted into denying!")
         return False
 
 def is_room_restricted(room,db):
     try:
         return room in db['restricted']
     except:
-        traceback.print_exc()
         return False
 
 def is_room_locked(room,db):
     try:
         return room in db['locked']
     except:
-        traceback.print_exc()
         return False
 
 @gd_bot.event
@@ -81,17 +76,6 @@ async def on_ready():
     gd_bot.logger.info('Guilded client booted!')
     if not hasattr(gd_bot.dc_bot, 'platforms_former'):
         gd_bot.compatibility_mode = True
-
-@gd_bot.command(aliases=['hello'])
-async def hi(ctx):
-    return await ctx.send(f'Hi {ctx.author.name}! Guilded works!')
-
-@gd_bot.command()
-async def send(ctx,*,content):
-    guild = gd_bot.dc_bot.get_guild(1196475780973207604)
-    ch = guild.get_channel(1208761825898790965)
-    await ch.send(content)
-    await ctx.send('check discord')
 
 @gd_bot.command(aliases=['link','connect','federate','bridge'])
 async def bind(ctx,*,room):
@@ -422,8 +406,8 @@ async def on_message_delete(message):
 
 @gd_bot.event
 async def on_bot_add(server, member):
-    # Autoleave from servers not in whitelist
-    if not member.id=='m7QDO1a4':
+    # Autoleave from servers not in whitelist, unless the owner added the bot to the server
+    if not member.id == gd_bot.dc_bot.config['owner_external']['guilded'] and enable_whitelist:
         if not server.id in whitelist:
             gd_bot.logger.info(f'Autoleave triggered: {server.name} ({server.id})')
             await server.leave()
@@ -433,13 +417,28 @@ class Guilded(commands.Cog,name='<:GuildedSupport:1220134640996843621> Guilded S
 
     Developed by Green"""
     def __init__(self,bot):
+        global enable_whitelist
+        global whitelist
+        global admin_ids
+
         self.bot = bot
         if not 'guilded' in self.bot.config['external']:
             raise RuntimeError('guilded is not listed as an external service in config.json. More info: https://unichat-wiki.pixels.onl/setup-selfhosted/getting-started#installing-revolt-support')
         if not hasattr(self.bot, 'guilded_client'):
             self.bot.guilded_client = gd_bot
+            self.bot.guilded_client.command_prefix = self.bot.command_prefix
             self.bot.guilded_client_task = asyncio.create_task(self.guilded_boot())
         self.logger = log.buildlogger(self.bot.package, 'guilded.core', self.bot.loglevel)
+
+        if hasattr(self.bot, 'plugin_config'):
+            if 'guilded' in self.bot.plugin_config.keys():
+                plugin_config = self.bot.plugin_config['guilded']
+
+                if 'whitelist' in plugin_config.keys():
+                    enable_whitelist = plugin_config['whitelist'].get('enable_whitelist', False)
+                    whitelist = plugin_config['whitelist'].get('whitelist', [])
+
+        admin_ids = self.bot.admins
 
     async def guilded_boot(self):
         if not self.bot.guilded_client.ws:
