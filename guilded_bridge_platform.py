@@ -291,7 +291,8 @@ class GuildedPlatform(platform_base.PlatformBase):
                     # noinspection PyUnresolvedReferences
                     if reply.source == 'discord':
                         # noinspection PyUnresolvedReferences
-                        reply_name = self.parent.get_user(int(reply.author)).global_name
+                        user = self.parent.get_user(int(reply.author))
+                        reply_name = user.global_name or user.name
                     else:
                         # noinspection PyUnresolvedReferences
                         source_support = self.parent.bridge.platforms[reply.source]
