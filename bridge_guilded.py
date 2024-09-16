@@ -79,6 +79,13 @@ async def on_ready():
         return
     if 'guilded' in gd_bot.dc_bot.platforms.keys():
         gd_bot.dc_bot.platforms['guilded'].attach_bot(gd_bot)
+    else:
+        while not 'guilded' in gd_bot.dc_bot.platforms_former.keys():
+            # wait until support plugin has been loaded
+            await asyncio.sleep(1)
+        gd_bot.dc_bot.platforms.update(
+            {'guilded': gd_bot.dc_bot.platforms_former['guilded'].GuildedPlatform(gd_bot, gd_bot.dc_bot)}
+        )
 
 @gd_bot.command(aliases=['link','connect','federate','bridge'])
 async def bind(ctx,*,room):
