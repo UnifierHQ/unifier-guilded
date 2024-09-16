@@ -190,7 +190,11 @@ async def unbind(ctx,*,room=None):
             return await ctx.send('This channel is not connected to a room.')
     if not ctx.author.guild_permissions.manage_channels and not is_user_admin(ctx.author.id):
         return await ctx.send('You don\'t have the necessary permissions.')
-    if not room in gd_bot.dc_bot.bridge.rooms.keys():
+    if gd_bot.compatibility_mode:
+        rooms = list(gd_bot.dc_bot.db['rooms_guilded'].keys())
+    else:
+        rooms = gd_bot.dc_bot.bridge.rooms
+    if not room in rooms:
         return await ctx.send('This isn\'t a valid room.')
     try:
         if gd_bot.compatibility_mode:
