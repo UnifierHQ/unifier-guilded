@@ -260,10 +260,6 @@ class GuildedPlatform(platform_base.PlatformBase):
         if not embeds:
             embeds = []
 
-        if reply:
-            # noinspection PyUnresolvedReferences
-            reply = reply.id
-
         if 'bridge' in special.keys():
             # check if we're in a room
             room = self.parent.bridge.get_channel_room(channel, platform='guilded')
@@ -287,13 +283,19 @@ class GuildedPlatform(platform_base.PlatformBase):
             replytext = ''
 
             if reply:
+                # reply must be a UnifierMessage here
+                # as reply cannot be none, PyUnresolvedReferences can be ignored
                 reply_name = None
 
                 try:
+                    # noinspection PyUnresolvedReferences
                     if reply.source == 'discord':
+                        # noinspection PyUnresolvedReferences
                         reply_name = self.parent.get_user(int(reply.author)).global_name
                     else:
+                        # noinspection PyUnresolvedReferences
                         source_support = self.parent.bridge.platforms[reply.source]
+                        # noinspection PyUnresolvedReferences
                         reply_name = source_support.display_name(source_support.get_user(reply.author))
                 except:
                     pass
@@ -303,7 +305,9 @@ class GuildedPlatform(platform_base.PlatformBase):
                 else:
                     reply_name = '@' + reply_name.replace('[','').replace(']','')
 
+                # noinspection PyUnresolvedReferences
                 if channel.server.id in reply.urls.keys():
+                    # noinspection PyUnresolvedReferences
                     replytext = f'{arrow_unicode} **[Replying to {reply_name}]({reply.urls[channel.server.id]})**'
                 else:
                     replytext = f'{arrow_unicode} **Replying to {reply_name}**'
@@ -315,6 +319,14 @@ class GuildedPlatform(platform_base.PlatformBase):
 
             return await webhook.send(replytext + content, embeds=embeds, files=files, username=name, avatar_url=avatar)
         else:
+            if reply:
+                # reply must be an ID or ChatMessage here
+                if type(reply) is str:
+                    reply = await channel.fetch_message(reply)
+                elif type(reply) is guilded.ChatMessage:
+                    pass
+                else:
+                    reply = None
             return await channel.send(content, embeds=embeds, files=files, reply_to=[reply] if reply else None)
 
     async def edit(self, message: guilded.ChatMessage, content, special: dict = None):
