@@ -442,7 +442,7 @@ class Guilded(commands.Cog,name='<:GuildedSupport:1220134640996843621> Guilded S
 
     async def guilded_boot(self):
         if not self.bot.guilded_client.ws:
-            if not hasattr(gd_bot.dc_bot, 'platforms_former'):
+            if not hasattr(self.bot, 'platforms_former'):
                 self.logger.warning('Guilded Support is starting in legacy mode (non-NUPS).')
                 self.logger.info('Syncing Guilded rooms...')
                 for key in self.bot.db['rooms']:
