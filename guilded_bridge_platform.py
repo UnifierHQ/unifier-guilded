@@ -2,6 +2,8 @@ import nextcord
 import guilded
 from utils import platform_base
 
+arrow_unicode = '\U0000250C'
+
 class GuildedPlatform(platform_base.PlatformBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -250,6 +252,7 @@ class GuildedPlatform(platform_base.PlatformBase):
         files = special.get('files', [])
         embeds = special.get('embeds', [])
         reply = special.get('reply', None)
+        reply_content = special.get('reply_content', None)
 
         if not files:
             files = []
@@ -281,8 +284,36 @@ class GuildedPlatform(platform_base.PlatformBase):
             name = special['bridge']['name'].encode("ascii", errors="ignore").decode()
             avatar = special['bridge']['avatar']
 
-            return await webhook.send(content, embeds=embeds, files=files, reply_to=[reply] if reply else None,
-                                      username=name, avatar_url=avatar)
+            replytext = ''
+
+            if reply:
+                reply_name = None
+
+                try:
+                    if reply.source == 'discord':
+                        reply_name = self.parent.get_user(int(reply.author)).global_name
+                    else:
+                        source_support = self.parent.bridge.platforms[reply.source]
+                        reply_name = source_support.display_name(source_support.get_user(reply.author))
+                except:
+                    pass
+
+                if not reply_name:
+                    reply_name = 'unknown'
+                else:
+                    reply_name = '@' + reply_name.replace('[','').replace(']','')
+
+                if channel.server.id in reply.urls.keys():
+                    replytext = f'{arrow_unicode} **[Replying to {reply_name}]({reply.urls[channel.server.id]})**'
+                else:
+                    replytext = f'{arrow_unicode} **Replying to {reply_name}**'
+
+                if reply_content:
+                    replytext += f' - *{reply_content}*\n'
+                else:
+                    replytext += '\n'
+
+            return await webhook.send(replytext + content, embeds=embeds, files=files, username=name, avatar_url=avatar)
         else:
             return await channel.send(content, embeds=embeds, files=files, reply_to=[reply] if reply else None)
 
