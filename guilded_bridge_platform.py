@@ -48,8 +48,14 @@ class GuildedPlatform(platform_base.PlatformBase):
     def channel(self, message: guilded.ChatMessage):
         return message.channel
 
+    def channel_id(self, obj):
+        return obj.channel_id
+
     def server(self, message: guilded.ChatMessage):
         return message.server
+
+    def server_id(self, obj):
+        return obj.server_id
 
     def content(self, message: guilded.ChatMessage):
         return message.content
