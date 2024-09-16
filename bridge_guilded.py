@@ -139,7 +139,7 @@ async def bind(ctx,*,room):
         if gd_bot.compatibility_mode:
             rules = gd_bot.dc_bot.db['rules'][room]
         else:
-            rules = gd_bot.dc_bot.bridge.get_room(room)['rules']
+            rules = gd_bot.dc_bot.bridge.get_room(room)['meta']['rules']
         if len(rules)==0:
             text = f'No rules exist yet for this room! For now, follow the main room\'s rules.\nYou can always view rules if any get added using `{gd_bot.dc_bot.command_prefix}rules {room}`.'
         else:
