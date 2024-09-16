@@ -136,10 +136,14 @@ async def bind(ctx,*,room):
             return await ctx.send(f'Your server is already linked to this room.\n**Accidentally deleted the webhook?** `{gd_bot.dc_bot.command_prefix}unlink` it then `{gd_bot.dc_bot.command_prefix}link` it back.')
         index = 0
         text = ''
-        if len(gd_bot.dc_bot.db['rules'][room])==0:
+        if gd_bot.compatibility_mode:
+            rules = gd_bot.dc_bot.db['rules'][room]
+        else:
+            rules = gd_bot.dc_bot.bridge.get_room(room)['rules']
+        if len(rules)==0:
             text = f'No rules exist yet for this room! For now, follow the main room\'s rules.\nYou can always view rules if any get added using `{gd_bot.dc_bot.command_prefix}rules {room}`.'
         else:
-            for rule in gd_bot.dc_bot.db['rules'][room]:
+            for rule in rules:
                 if text=='':
                     text = f'1. {rule}'
                 else:
@@ -271,8 +275,8 @@ async def delete(ctx, *, msg_id=None):
             traceback.print_exc()
             await ctx.send('Something went wrong.')
 
-@gd_bot.command(aliases=['ban'])
-async def restrict(ctx, *, target):
+@gd_bot.command()
+async def block(ctx, *, target):
     if not ctx.author.get_permissions().kick_members and not ctx.author.get_permissions().ban_members:
         return await ctx.send('You cannot restrict members/servers.')
     try:
@@ -299,8 +303,8 @@ async def restrict(ctx, *, target):
     gd_bot.dc_bot.db.save_data()
     await ctx.send('User/server can no longer forward messages to this channel!')
 
-@gd_bot.command(aliases=['unban'])
-async def unrestrict(ctx, *, target):
+@gd_bot.command()
+async def unblock(ctx, *, target):
     if not ctx.author.get_permissions().kick_members and not ctx.author.get_permissions().ban_members:
         return await ctx.send('You cannot unrestrict members/servers.')
     try:
