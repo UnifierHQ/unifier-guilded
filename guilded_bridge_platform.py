@@ -176,6 +176,13 @@ class GuildedPlatform(platform_base.PlatformBase):
     async def fetch_channel(self, channel_id):
         return await self.bot.fetch_channel(channel_id)
 
+    async def fetch_webhook(self, webhook_id, server_id):
+        try:
+            return self.get_webhook(webhook_id)
+        except:
+            server = await self.bot.getch_server(server_id)
+            return await server.fetch_webhook(webhook_id)
+
     async def make_friendly(self, text: str):
         # Remove user mentions
         if len(text.split('<@')) > 1:
