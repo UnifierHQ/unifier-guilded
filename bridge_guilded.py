@@ -76,6 +76,9 @@ async def on_ready():
     gd_bot.logger.info('Guilded client booted!')
     if not hasattr(gd_bot.dc_bot, 'platforms_former'):
         gd_bot.compatibility_mode = True
+        return
+    if 'guilded' in gd_bot.dc_bot.platforms.keys():
+        gd_bot.dc_bot.platforms['guilded'].attach_bot(gd_bot)
 
 @gd_bot.command(aliases=['link','connect','federate','bridge'])
 async def bind(ctx,*,room):
