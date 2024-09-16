@@ -267,9 +267,9 @@ class GuildedPlatform(platform_base.PlatformBase):
 
             if room:
                 webhook_id = self.parent.bridge.get_room(room)['guilded'][channel.server.id]
-                webhook = self.get_webhook(webhook_id)
-
-                if not webhook:
+                try:
+                    webhook = self.get_webhook(webhook_id)
+                except:
                     server = self.get_server(channel.server.id)
                     webhook = await server.fetch_webhook(webhook_id)
                     self.store_webhook(webhook)
