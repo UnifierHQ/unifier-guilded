@@ -73,7 +73,6 @@ def is_room_locked(room,db):
 
 @gd_bot.event
 async def on_ready():
-    gd_bot.logger.info('Guilded client booted!')
     if not hasattr(gd_bot.dc_bot, 'platforms_former'):
         gd_bot.compatibility_mode = True
         return
@@ -86,6 +85,8 @@ async def on_ready():
         gd_bot.dc_bot.platforms.update(
             {'guilded': gd_bot.dc_bot.platforms_former['guilded'].GuildedPlatform(gd_bot, gd_bot.dc_bot)}
         )
+    await gd_bot.dc_bot.bridge.optimize(platform='guilded')
+    gd_bot.logger.info('Guilded client booted!')
 
 @gd_bot.command(aliases=['link','connect','federate','bridge'])
 async def bind(ctx,*,room):
