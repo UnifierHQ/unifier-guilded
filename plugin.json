@@ -2,14 +2,19 @@
   "id": "guilded",
   "name": "Guilded Support",
   "description": "Unifier Guilded Support extension",
-  "version": "v1.0.1",
-  "release": 7,
-  "minimum": 47,
+  "version": "v1.1.0",
+  "release": 8,
+  "minimum": 58,
+  "services": [
+    "bridge_platform"
+  ],
+  "bridge_platform": "guilded",
   "shutdown": true,
   "modules": [
     "bridge_guilded.py"
   ],
   "utils": [
-    "guilded_check.py"
+    "guilded_check.py",
+    "guilded_bridge_platform.py"
   ]
 }
