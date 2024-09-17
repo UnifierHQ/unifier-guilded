@@ -143,7 +143,10 @@ class GuildedPlatform(platform_base.PlatformBase):
                 return 'unknown'
 
     def convert_embeds(self, embeds: list):
+        converted = []
         for i in range(len(embeds)):
+            if not type(embeds[i]) is nextcord.Embed:
+                continue
             embed = guilded.Embed(
                 title=embeds[i].title,
                 description=embeds[i].description,
@@ -155,11 +158,13 @@ class GuildedPlatform(platform_base.PlatformBase):
             embed.set_thumbnail(url=embeds[i].thumbnail.url)
             embed.set_author(name=embeds[i].author.name, url=embeds[i].author.url, icon_url=embeds[i].author.icon_url)
             embed.set_footer(text=embeds[i].footer.text,icon_url=embeds[i].footer.icon_url)
-            embeds[i] = embed
-        return embeds
+            converted.append(embed)
+        return converted
 
     def convert_embeds_discord(self, embeds: list):
         for i in range(len(embeds)):
+            if not type(embeds[i]) is guilded.Embed:
+                continue
             embed = nextcord.Embed(
                 title=embeds[i].title,
                 description=embeds[i].description,
