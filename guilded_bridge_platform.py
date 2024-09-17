@@ -154,10 +154,18 @@ class GuildedPlatform(platform_base.PlatformBase):
                 colour=embeds[i].colour.value,
                 timestamp=embeds[i].timestamp or guilded.Embed.Empty,
             )
-            embed.set_image(url=embeds[i].image.url or guilded.Embed.Empty)
-            embed.set_thumbnail(url=embeds[i].thumbnail.url or guilded.Embed.Empty)
-            embed.set_author(name=embeds[i].author.name, url=embeds[i].author.url, icon_url=embeds[i].author.icon_url)
-            embed.set_footer(text=embeds[i].footer.text,icon_url=embeds[i].footer.icon_url)
+            if embed.image:
+                embed.set_image(url=embeds[i].image.url or guilded.Embed.Empty)
+            if embed.thumbnail:
+                embed.set_thumbnail(url=embeds[i].thumbnail.url or guilded.Embed.Empty)
+            if embed.author:
+                embed.set_author(
+                    name=embeds[i].author.name,
+                    url=embeds[i].author.url,
+                    icon_url=embeds[i].author.icon_url or guilded.Embed.Empty
+                )
+            if embed.footer:
+                embed.set_footer(text=embeds[i].footer.text, icon_url=embeds[i].footer.icon_url  or guilded.Embed.Empty)
             converted.append(embed)
         return converted
 
