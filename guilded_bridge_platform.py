@@ -148,8 +148,8 @@ class GuildedPlatform(platform_base.PlatformBase):
             if not type(embeds[i]) is nextcord.Embed:
                 continue
             embed = guilded.Embed(
-                title=embeds[i].title,
-                description=embeds[i].description,
+                title=embeds[i].title or guilded.Embed.Empty,
+                description=embeds[i].description or guilded.Embed.Empty,
                 url=embeds[i].url or guilded.Embed.Empty,
                 colour=embeds[i].colour.value,
                 timestamp=embeds[i].timestamp or guilded.Embed.Empty,
