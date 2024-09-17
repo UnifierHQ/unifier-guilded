@@ -150,7 +150,7 @@ class GuildedPlatform(platform_base.PlatformBase):
             embed = guilded.Embed(
                 title=embeds[i].title,
                 description=embeds[i].description,
-                url=embeds[i].url,
+                url=embeds[i].url or guilded.Embed.Empty,
                 colour=embeds[i].colour.value,
                 timestamp=embeds[i].timestamp or guilded.Embed.Empty,
             )
