@@ -152,7 +152,7 @@ class GuildedPlatform(platform_base.PlatformBase):
                 description=embeds[i].description,
                 url=embeds[i].url,
                 colour=embeds[i].colour.value,
-                timestamp=embeds[i].timestamp,
+                timestamp=embeds[i].timestamp or guilded.Embed.Empty,
             )
             embed.set_image(url=embeds[i].image.url)
             embed.set_thumbnail(url=embeds[i].thumbnail.url)
