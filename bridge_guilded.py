@@ -354,7 +354,7 @@ async def on_message(message):
         found = False
         origin_room = 0
 
-        hooks = await message.server.webhooks()
+        hooks = await message.channel.webhooks()
         for webhook in hooks:
             index = 0
             for key in gd_bot.dc_bot.db['rooms_guilded']:
