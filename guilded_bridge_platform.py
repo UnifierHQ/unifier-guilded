@@ -15,21 +15,21 @@ class GuildedPlatform(platform_base.PlatformBase):
 
     # WebhookCacheStore wrapper for Guilded Support NUPS module
     def store_webhook(self, webhook: guilded.Webhook):
-        return self.parent.bridge.webhook_cache.store_webhook(webhook, webhook.id, webhook.server.id)
+        return self.bot.webhook_cache.store_webhook(webhook, webhook.id, webhook.server.id)
 
     def store_webhooks(self, webhooks: list):
-        return self.parent.bridge.webhook_cache.store_webhooks(
+        return self.bot.webhook_cache.store_webhooks(
             webhooks, [webhook.id for webhook in webhooks], [webhooks[0].server.id] * len(webhooks)
         )
 
     def get_webhooks(self, guild: str):
-        return self.parent.bridge.webhook_cache.get_webhooks(guild)
+        return self.bot.webhook_cache.get_webhooks(guild)
 
     def get_webhook(self, identifier: str):
-        return self.parent.bridge.webhook_cache.get_webhook(identifier)
+        return self.bot.webhook_cache.get_webhook(identifier)
 
     def clear(self, guild: int or str = None):
-        return self.parent.bridge.webhook_cache.clear(guild)
+        return self.bot.webhook_cache.clear(guild)
 
     # Guilded Support NUPS functions
     def get_server(self, server_id):

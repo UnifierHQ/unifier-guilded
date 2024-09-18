@@ -34,12 +34,63 @@ load_dotenv() # Do not check success
 if not "TOKEN_GUILDED" in os.environ:
     raise RuntimeError('No Guilded token found')
 
+class WebhookCacheStore:
+    def __init__(self, bot):
+        self.__bot = bot
+        self.__webhooks = {}
+
+    def store_webhook(self, webhook, identifier, server):
+        if not server in self.__webhooks.keys():
+            self.__webhooks.update({server: {identifier: webhook}})
+        self.__webhooks[server].update({identifier: webhook})
+        return len(self.__webhooks[server])
+
+    def store_webhooks(self, webhooks: list, identifiers: list, servers: list):
+        if not len(webhooks) == len(identifiers) == len(servers):
+            raise ValueError('webhooks, identifiers, and servers must be the same length')
+
+        for index in range(len(webhooks)):
+            webhook = webhooks[index]
+            identifier = identifiers[index]
+            server = servers[index]
+            if not server in self.__webhooks.keys():
+                self.__webhooks.update({server: {identifier: webhook}})
+            self.__webhooks[server].update({identifier: webhook})
+        return len(self.__webhooks)
+
+    def get_webhooks(self, server: int or str):
+        try:
+            server = int(server)
+        except:
+            pass
+        if len(self.__webhooks[server].values())==0:
+            raise ValueError('no webhooks')
+        return list(self.__webhooks[server].values())
+
+    def get_webhook(self, identifier: int or str):
+        try:
+            identifier = int(identifier)
+        except:
+            pass
+        for guild in self.__webhooks.keys():
+            if identifier in self.__webhooks[guild].keys():
+                return self.__webhooks[guild][identifier]
+        raise ValueError('invalid webhook')
+
+    def clear(self, server: int or str = None):
+        if not server:
+            self.__webhooks = {}
+        else:
+            self.__webhooks[server] = {}
+        return
+
 class GuildedBot(gd_commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.dc_bot = None
         self.logger = None
         self.compatibility_mode = False
+        self.webhook_cache = None
 
     def add_bot(self,bot):
         self.dc_bot: commands.Bot = bot
@@ -86,6 +137,7 @@ async def on_ready():
             {'guilded': gd_bot.dc_bot.platforms_former['guilded'].GuildedPlatform(gd_bot, gd_bot.dc_bot)}
         )
     await gd_bot.dc_bot.bridge.optimize(platform='guilded')
+    gd_bot.webhook_cache = WebhookCacheStore(gd_bot)
     gd_bot.logger.info('Guilded client booted!')
 
 @gd_bot.command(aliases=['link','connect','federate','bridge'])
