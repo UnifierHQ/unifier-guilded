@@ -307,7 +307,7 @@ class GuildedPlatform(platform_base.PlatformBase):
 
             # as Guilded only supports ascii for usernames, remove all non-ascii characters
             # user emojis will be omitted
-            name = special['bridge']['name'].encode("ascii", errors="ignore").decode()
+            name = special['bridge']['name'].encode("ascii", errors="ignore").decode() or 'Empty username'
             avatar = special['bridge']['avatar']
 
             replytext = ''
