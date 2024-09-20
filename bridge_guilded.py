@@ -29,6 +29,7 @@ import os
 try:
     from utils import webhook_cache
 except:
+    # set this to none as this is a v2 installation
     webhook_cache = None
 
 enable_whitelist = False
