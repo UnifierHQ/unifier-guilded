@@ -9,6 +9,7 @@ class GuildedPlatform(platform_base.PlatformBase):
         super().__init__(*args, **kwargs)
         self.enable_tb = True
         self.uses_webhooks = True
+        self.reply_using_text = True
 
     def bot_id(self):
         return self.bot.user.id
