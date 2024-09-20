@@ -165,7 +165,7 @@ class GuildedPlatform(platform_base.PlatformBase):
                     icon_url=embeds[i].author.icon_url or guilded.Embed.Empty
                 )
             if embed.footer:
-                embed.set_footer(text=embeds[i].footer.text, icon_url=embeds[i].footer.icon_url  or guilded.Embed.Empty)
+                embed.set_footer(text=embeds[i].footer.text, icon_url=embeds[i].footer.icon_url or guilded.Embed.Empty)
             converted.append(embed)
         return converted
 
@@ -321,7 +321,7 @@ class GuildedPlatform(platform_base.PlatformBase):
                     # noinspection PyUnresolvedReferences
                     if reply.source == 'discord':
                         # noinspection PyUnresolvedReferences
-                        user = self.parent.get_user(int(reply.author))
+                        user = self.parent.get_user(int(reply.author_id))
                         reply_name = user.global_name or user.name
                     else:
                         # noinspection PyUnresolvedReferences
