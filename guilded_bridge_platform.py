@@ -349,6 +349,9 @@ class GuildedPlatform(platform_base.PlatformBase):
                 else:
                     replytext += '\n'
 
+            if len(replytext + content) == 0:
+                content = '[empty message]'
+
             return await webhook.send(replytext + content, embeds=embeds, files=files, username=name, avatar_url=avatar)
         else:
             if reply:
