@@ -34,9 +34,6 @@ except:
 enable_whitelist = False
 whitelist = []
 
-if not "TOKEN_GUILDED" in os.environ:
-    raise RuntimeError('No Guilded token found')
-
 class GuildedBot(gd_commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
