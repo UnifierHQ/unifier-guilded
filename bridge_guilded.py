@@ -23,7 +23,6 @@ import asyncio
 import traceback
 import time
 from utils import log
-from dotenv import load_dotenv
 import os
 
 try:
@@ -34,8 +33,6 @@ except:
 
 enable_whitelist = False
 whitelist = []
-
-load_dotenv() # Do not check success, as it should've worked on boot
 
 if not "TOKEN_GUILDED" in os.environ:
     raise RuntimeError('No Guilded token found')
