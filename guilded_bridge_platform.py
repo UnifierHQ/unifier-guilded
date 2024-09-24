@@ -324,9 +324,13 @@ class GuildedPlatform(platform_base.PlatformBase):
                         # noinspection PyUnresolvedReferences
                         user = self.parent.get_user(int(reply.author_id))
                         reply_name = user.global_name or user.name
+                    elif reply.source == 'guilded':
+                        # noinspection PyUnresolvedReferences
+                        user = self.bot.get_user(reply.author_id)
+                        reply_name = user.display_name or user.name
                     else:
                         # noinspection PyUnresolvedReferences
-                        source_support = self.parent.bridge.platforms[reply.source]
+                        source_support = self.parent.platforms[reply.source]
                         # noinspection PyUnresolvedReferences
                         reply_name = source_support.display_name(source_support.get_user(reply.author))
                 except:
