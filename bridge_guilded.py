@@ -484,7 +484,10 @@ class Guilded(commands.Cog,name='<:GuildedSupport:1220134640996843621> Guilded S
                     self.logger.info('Booting Guilded client...')
                     self.bot.guilded_client.add_bot(self.bot)
                     self.bot.guilded_client.add_logger(log.buildlogger(self.bot.package, 'guilded.client', self.bot.loglevel))
-                    await self.bot.guilded_client.start(os.environ.get('TOKEN_GUILDED'))
+                    if hasattr(self.bot, 'tokenstore'):
+                        await self.bot.guilded_client.start(self.bot.tokenstore.retrieve('TOKEN_GUILDED'))
+                    else:
+                        await self.bot.guilded_client.start(os.environ.get('TOKEN_GUILDED'))
                 except:
                     self.logger.exception('Guilded client failed to boot!')
                     break
