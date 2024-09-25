@@ -332,7 +332,7 @@ class GuildedPlatform(platform_base.PlatformBase):
                         # noinspection PyUnresolvedReferences
                         source_support = self.parent.platforms[reply.source]
                         # noinspection PyUnresolvedReferences
-                        reply_name = source_support.display_name(source_support.get_user(reply.author))
+                        reply_name = source_support.display_name(source_support.get_user(reply.author_id))
                 except:
                     pass
 
