@@ -152,7 +152,7 @@ class GuildedPlatform(platform_base.PlatformBase):
                 title=embeds[i].title or guilded.Embed.Empty,
                 description=embeds[i].description or guilded.Embed.Empty,
                 url=embeds[i].url or guilded.Embed.Empty,
-                colour=embeds[i].colour.value,
+                colour=embeds[i].colour.value if embeds[i].colour else guilded.Embed.Empty,
                 timestamp=embeds[i].timestamp or guilded.Embed.Empty,
             )
             if embed.image:
