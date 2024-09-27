@@ -129,7 +129,6 @@ class GuildedPlatform(platform_base.PlatformBase):
             # noinspection PyTypeChecker
             # ^ this stops pycharm from complaining because file_type should be namedtuple
             for value in list(attachment.file_type):
-                print(type(value))
                 if value == guilded.FileType.image or value == 'unknown_image':
                     return 'image'
                 elif value == guilded.FileType.video or value == 'unknown_video':
