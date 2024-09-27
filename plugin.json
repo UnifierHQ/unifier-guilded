@@ -2,8 +2,8 @@
   "id": "guilded",
   "name": "Guilded Support",
   "description": "Unifier Guilded Support extension",
-  "version": "v1.1.11",
-  "release": 19,
+  "version": "v1.1.12",
+  "release": 20,
   "minimum": 58,
   "services": [
     "bridge_platform"
