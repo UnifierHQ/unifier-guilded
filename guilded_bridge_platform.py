@@ -68,7 +68,7 @@ class GuildedPlatform(platform_base.PlatformBase):
         return message.replied_to[0]
 
     def roles(self, member: guilded.Member):
-        pass
+        return member.roles
 
     def get_hex(self, role):
         # If the color is a gradient, use the first color value
