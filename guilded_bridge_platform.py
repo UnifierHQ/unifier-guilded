@@ -1,6 +1,7 @@
 import nextcord
 import guilded
 from utils import platform_base
+from typing import Union
 
 arrow_unicode = '\U0000250C'
 
@@ -279,8 +280,11 @@ class GuildedPlatform(platform_base.PlatformBase):
         # noinspection PyTypeChecker
         return nextcord.File(fp=tempfile.fp, filename=file.filename)
 
-    async def to_platform_file(self, file: nextcord.Attachment):
-        tempfile = await file.to_file(use_cached=True)
+    async def to_platform_file(self, file: Union[nextcord.Attachment, nextcord.File]):
+        if type(file) is nextcord.Attachment:
+            tempfile = await file.to_file(use_cached=True)
+        else:
+            tempfile = file
         return guilded.File(fp=tempfile.fp, filename=file.filename)
 
     async def send(self, channel, content, special: dict = None):
