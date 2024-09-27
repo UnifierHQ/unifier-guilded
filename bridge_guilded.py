@@ -49,7 +49,7 @@ class GuildedBot(gd_commands.Bot):
         self.logger = logger
 
 
-gd_bot = GuildedBot(command_prefix='u!')
+gd_bot = GuildedBot(command_prefix='u!',features=guilded.ClientFeatures(official_markdown=True))
 logger = None
 
 admin_ids = []
