@@ -12,6 +12,9 @@ class GuildedPlatform(platform_base.PlatformBase):
         self.uses_webhooks = True
         self.reply_using_text = True
 
+    def error_is_unavoidable(self, error):
+        return type(error) in [guilded.GuildedServerError, guilded.Forbidden]
+
     def bot_id(self):
         return self.bot.user.id
 
