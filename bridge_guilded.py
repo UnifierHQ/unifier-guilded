@@ -445,8 +445,8 @@ class Guilded(commands.Cog,name='<:GuildedSupport:1220134640996843621> Guilded S
         global admin_ids
 
         self.bot = bot
-        if not 'guilded' in self.bot.config['external']:
-            raise RuntimeError('guilded is not listed as an external service in config.json. More info: https://unichat-wiki.pixels.onl/setup-selfhosted/getting-started#installing-revolt-support')
+        if not 'guilded' in self.bot.config.get('external', ['guilded']):
+            raise RuntimeError('guilded is not listed as an external service in configuration. More info: https://wiki.unifierhq.org/setup-selfhosted/getting-started/unifier-older-versions#installing-guilded-support')
         if not hasattr(self.bot, 'guilded_client'):
             self.bot.guilded_client = gd_bot
             self.bot.guilded_client.command_prefix = self.bot.command_prefix
