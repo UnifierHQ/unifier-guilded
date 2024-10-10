@@ -338,7 +338,7 @@ class GuildedPlatform(platform_base.PlatformBase):
                     elif reply.source == 'guilded':
                         # noinspection PyUnresolvedReferences
                         user = self.bot.get_user(reply.author_id)
-                        reply_name = user.display_name or user.name
+                        reply_name = user.name
                     else:
                         # noinspection PyUnresolvedReferences
                         source_support = self.parent.platforms[reply.source]
