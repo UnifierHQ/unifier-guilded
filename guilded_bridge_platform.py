@@ -11,6 +11,7 @@ class GuildedPlatform(platform_base.PlatformBase):
         self.enable_tb = True
         self.uses_webhooks = True
         self.reply_using_text = True
+        self.filesize_limit = 500000000
 
     def error_is_unavoidable(self, error):
         return type(error) in [guilded.GuildedServerError, guilded.Forbidden]
