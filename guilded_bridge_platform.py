@@ -95,17 +95,17 @@ class GuildedPlatform(platform_base.PlatformBase):
     def get_id(self, obj):
         return obj.id
 
-    def display_name(self, user: guilded.User):
+    def display_name(self, user: guilded.User, message=None):
         # Guilded doesn't have display names, so return username
         return user.name
 
-    def user_name(self, user: guilded.User):
+    def user_name(self, user: guilded.User, message=None):
         return user.name
 
     def name(self, obj):
         return obj.name
 
-    def avatar(self, user):
+    def avatar(self, user, message=None):
         return user.avatar.url.split('?')[0] if user.avatar else None
 
     def permissions(self, user: guilded.Member, channel=None):
