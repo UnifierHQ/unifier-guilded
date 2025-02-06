@@ -1,4 +1,13 @@
 async def check(bot):
-    await bot.guilded_client.close()
+    try:
+        await bot.guilded_client.close()
+    except:
+        # we can ignore this
+        pass
+
     bot.guilded_client_task.cancel()
-    del bot.guilded_client
+
+    try:
+        del bot.guilded_client
+    except:
+        pass
