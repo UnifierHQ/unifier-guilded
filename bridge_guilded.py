@@ -51,6 +51,7 @@ class GuildedBot(gd_commands.Bot):
 
 gd_bot = GuildedBot(command_prefix='u!',features=guilded.ClientFeatures(official_markdown=True))
 logger = None
+cog_tokenstore = None
 
 admin_ids = []
 
@@ -482,7 +483,10 @@ class Guilded(commands.Cog,name='<:GuildedSupport:1220134640996843621> Guilded S
                     self.logger.info('Booting Guilded client...')
                     self.bot.guilded_client.add_bot(self.bot)
                     self.bot.guilded_client.add_logger(log.buildlogger(self.bot.package, 'guilded.client', self.bot.loglevel))
-                    if hasattr(self.bot, 'tokenstore'):
+                    if cog_tokenstore:
+                        # noinspection PyUnresolvedReferences
+                        await self.bot.guilded_client.start(cog_tokenstore.retrieve('TOKEN_REVOLT'))
+                    elif hasattr(self.bot, 'tokenstore'):
                         await self.bot.guilded_client.start(self.bot.tokenstore.retrieve('TOKEN_GUILDED'))
                     else:
                         await self.bot.guilded_client.start(os.environ.get('TOKEN_GUILDED'))
@@ -530,5 +534,7 @@ class Guilded(commands.Cog,name='<:GuildedSupport:1220134640996843621> Guilded S
             traceback.print_exc()
             await ctx.send('Something went wrong while restarting the instance.')
 
-def setup(bot):
+def setup(bot, tokenstore=None):
+    global cog_tokenstore
+    cog_tokenstore = tokenstore
     bot.add_cog(Guilded(bot))

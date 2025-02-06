@@ -11,6 +11,15 @@
   "bridge_platform": "guilded",
   "shutdown": true,
   "requirements": ["guilded.py"],
+  "required_tokens": [
+    "TOKEN_GUILDED"
+  ],
+  "required_tokens_protected": [
+    "TOKEN_GUILDED"
+  ],
+  "uses_tokenstore": [
+    "bridge_guilded.py"
+  ],
   "modules": [
     "bridge_guilded.py"
   ],
