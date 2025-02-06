@@ -485,7 +485,7 @@ class Guilded(commands.Cog,name='<:GuildedSupport:1220134640996843621> Guilded S
                     self.bot.guilded_client.add_logger(log.buildlogger(self.bot.package, 'guilded.client', self.bot.loglevel))
                     if cog_tokenstore:
                         # noinspection PyUnresolvedReferences
-                        await self.bot.guilded_client.start(cog_tokenstore.retrieve('TOKEN_REVOLT'))
+                        await self.bot.guilded_client.start(cog_tokenstore.retrieve('TOKEN_GUILDED'))
                     elif hasattr(self.bot, 'tokenstore'):
                         await self.bot.guilded_client.start(self.bot.tokenstore.retrieve('TOKEN_GUILDED'))
                     else:
