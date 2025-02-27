@@ -380,7 +380,7 @@ class GuildedPlatform(platform_base.PlatformBase):
                     reply = None
             return await channel.send(content, embeds=embeds, files=files, reply_to=[reply] if reply else None)
 
-    async def edit(self, message: guilded.ChatMessage, content, special: dict = None):
+    async def edit(self, message: guilded.ChatMessage, content, source: str = 'discord', special: dict = None):
         if message.webhook_id:
             # can't edit a webhook message
             return
