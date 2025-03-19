@@ -291,6 +291,14 @@ class GuildedPlatform(platform_base.PlatformBase):
             tempfile = file
         return guilded.File(fp=tempfile.fp, filename=file.filename)
 
+    def file_name(self, attachment: guilded.Attachment):
+        """Returns the filename of an attachment."""
+        return attachment.filename
+
+    def file_url(self, attachment: guilded.Attachment):
+        """Returns the URL of an attachment."""
+        raise attachment.url
+
     async def send(self, channel, content, special: dict = None):
         files = special.get('files', [])
         embeds = special.get('embeds', [])
