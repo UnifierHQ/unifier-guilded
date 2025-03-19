@@ -14,7 +14,7 @@ It is like [Unifier Revolt Support](https://github.com/greeeen-dev/unifier-revol
 Unifier v2.0.0 or newer is required.
 
 ## Setup
-To install Unifier Guilded Support, you can run `u!install https://github.com/UnifierHQ/unifier-guilded` on the bot.
+To install Unifier Guilded Support, you can run `u!system install https://github.com/UnifierHQ/unifier-guilded` on the bot.
 This will install the plugin through System Manager.
 
 > [!NOTE]
