@@ -1,3 +1,10 @@
+> [!CAUTION]
+> Roblox has announced that [Guilded will shut down by the end of this
+> year](https://devforum.roblox.com/t/update-on-guilded-and-communities/3966775). Therefore, Unifier Guilded Support
+> has been discontinued.
+>
+> Guilded Support will not be ported to Unifier v4.
+
 # Unifier Guilded Support
 Unifier Guilded Support extension for Unifier bot
 
